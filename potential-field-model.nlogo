@@ -3,8 +3,15 @@
 ;;
 ;; This software is authored by Team 1.
 
+;; set global variables
+globals [
+  mouse-clicked?  ;; tracking variable for mouse-manager
+]
+
 ;; create agent types
 breed [uuvs uuv]  ;; agents representing the uuv
+breed [rocks rock]  ;; agent representing an obstacle
+
 
 ;; define field parameters for patches
 patches-own [
@@ -16,23 +23,65 @@ to setup
 
   ;; define the initial potential field
   ask patches [
-    set potential pycor  ;; this is a toy example to test the framework
+    set potential pycor  ;; set patch potentials to their y coordinate
   ]
 
   ;; initialize the uuv
   create-uuvs 1 [
     setxy 5 0
+    set color red  ;; set the color to make it stand out
   ]
+
+  ask patches [color-potential]
 
   reset-ticks
 end
 
-to go
+to color-potential
+  ;; color patches to make it look nice
+  set pcolor scale-color green potential -16 16
+end
 
+to go
   ;; seek to minimize the potential of the uuv
   ask uuvs [downhill potential]  ;; TODO: the downhill algorithm shouldn't be used for a real simulation
 
   tick  ;; next simulation step
+end
+
+to edit-map
+  ;; place an obstacle
+  ;; if mouse-down? [ place-rock mouse-xcor mouse-ycor ]
+  mouse-manager
+
+end
+
+to place-rock [ my-x my-y ]
+  ;; add a rock and update the potential field
+  create-rocks 1 [  ;; add rock at mouse click
+    setxy my-x my-y
+    set color gray
+    set shape "circle"
+    ask patch-here [
+      set potential potential + 5
+    ]
+  ]
+
+  ask patches [color-potential]  ;; update the field colors
+end
+
+
+;; mouse management procedures
+;; https://stackoverflow.com/questions/22134822/detecting-a-mouse-click-mouse-up-in-netlogo
+to mouse-manager
+  ifelse mouse-down? [
+    if not mouse-clicked? [
+      set mouse-clicked? true
+      place-rock mouse-xcor mouse-ycor
+    ]
+  ] [
+    set mouse-clicked? false
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -80,13 +129,30 @@ NIL
 1
 
 BUTTON
-78
-165
-141
-198
+64
+112
+127
+145
 NIL
 go
 NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+85
+187
+165
+220
+NIL
+edit-map
+T
 1
 T
 OBSERVER
