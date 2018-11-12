@@ -173,7 +173,9 @@ The potential value of the patches defines the potential field.  The autonomous 
 
 ## HOW TO USE IT
 
-(how to use the model, including a description of each of the items in the Interface tab)
+1. Initialize the model by clicking the setup button.
+2. Click the edit-map button to place rocks.  Click the button again when done.
+3. Click go to increment the model by 1 time step.  Repeat to progress through the simulation.
 
 ## THINGS TO NOTICE
 
