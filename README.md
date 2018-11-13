@@ -14,6 +14,12 @@ Repository for threat UUV models and simulation.  Detailed documentation is deve
 
 Download and run the installation file for the desired version at https://ccl.northwestern.edu/netlogo/oldversions.shtml
 
+# Code Structure
+
+The main simulation loop runs in `potential-field-model.nlogo`.  Detailed
+procedures for simulating specific components and setting up the environment are
+included as separate `*.nls` code files.
+
 # References
 *Cite applicable references for software or models*
 

@@ -3,6 +3,10 @@
 ;;
 ;; This software is authored by Team 1.
 
+__includes [
+  "environment_setup.nls"
+]
+
 ;; set global variables
 globals [
   mouse-clicked?  ;; tracking variable for mouse-manager
@@ -70,6 +74,22 @@ to place-rock [ my-x my-y ]
   ask patches [color-potential]  ;; update the field colors
 end
 
+to draw-path
+  ;; use the mouse to draw a path in the field
+
+  ifelse mouse-down? [
+    if not mouse-clicked? [
+      set mouse-clicked? true
+      ask patch mouse-xcor mouse-ycor [
+        set potential potential - 1
+      ]
+    ]
+  ] [
+    set mouse-clicked? false
+  ]
+
+  ask patches [color-potential] ;; update field colors
+end
 
 ;; mouse management procedures
 ;; https://stackoverflow.com/questions/22134822/detecting-a-mouse-click-mouse-up-in-netlogo
@@ -152,6 +172,23 @@ BUTTON
 220
 NIL
 edit-map
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+60
+263
+149
+296
+NIL
+draw-path
 T
 1
 T

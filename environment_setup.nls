@@ -1,0 +1,14 @@
+;; netlogo code to define the map environment
+
+to place-objects
+  ;; read a file with the location of objects in the environment
+end
+
+to setup-mission-plan
+  ;; read a file that defines the objective potential field
+  ;; https://github.com/NetLogo/models/blob/master/Code%20Examples/File%20Input%20Example.nlogo
+end
+
+to setup-currents
+  ;; read a file that defines the currents in the environment
+end
