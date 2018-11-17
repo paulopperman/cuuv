@@ -27,7 +27,7 @@ to setup
 
   ;; define the initial potential field
   ask patches [
-    set potential pycor  ;; set patch potentials to their y coordinate
+    set potential pycor + pxcor  ;; set patch potentials to their y coordinate
   ]
 
   ;; initialize the uuv
