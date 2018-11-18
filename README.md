@@ -33,6 +33,8 @@ The main simulation loop runs in `potential-field-model.nlogo`.  Detailed
 procedures for simulating specific components and setting up the environment are
 included as separate `*.nls` code files.
 
+The `Mission Profile.ipynb` file is used to develop mission profile patch data to be loaded into the netlogo simulation.
+
 # References
 *Cite applicable references for software or models*
 
