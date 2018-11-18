@@ -6,6 +6,11 @@ Repository for threat UUV models and simulation.  Detailed documentation is deve
 *Describe software, languages, and packages required to run the code.*
 
 * NetLogo 6.0.4
+* Python 3.6
+  * [Jupyter](http://jupyter.org/) - browser based tool for working with jupyter notebooks (`*.ipynb` files).
+  * [numpy](http://www.numpy.org/) - python mathematics library
+  * [matplotlib](https://matplotlib.org/) - python plotting library
+  * [pandas](https://pandas.pydata.org/) - data processing and analysis library
 
 # Setup / Installation Instructions
 *Describe steps for how to execute the code.*
@@ -13,6 +18,14 @@ Repository for threat UUV models and simulation.  Detailed documentation is deve
 #### NetLogo
 
 Download and run the installation file for the desired version at https://ccl.northwestern.edu/netlogo/oldversions.shtml
+
+#### Python
+
+The recommended python setup uses anaconda.
+
+1. Download the anaconda installer for python 3.x from [here](https://www.anaconda.com/download/).
+2. Install anaconda, following these [installation instructions](https://docs.anaconda.com/anaconda/install/).
+3. Use [Anaconda Navigator](https://docs.anaconda.com/anaconda/navigator/getting-started/) or the [conda command line interface](https://conda.io/docs/user-guide/getting-started.html) to create a Python 3 environment.  The conda command to create the environment and install packages is `conda create -n nps-env python=3.6 pandas jupyter numpy matplotlib` 
 
 # Code Structure
 
