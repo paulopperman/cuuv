@@ -20,19 +20,25 @@ breed [rocks rock]  ;; agent representing an obstacle
 ;; define field parameters for patches
 patches-own [
   potential
+  behavior_x  ; x component of the behavior map vector
+  behavior_y  ; y component of the behavior map vector
 ]
+
+
 
 to setup
   clear-all
 
-  ;; define the initial potential field
-  ask patches [
-    set potential pycor + pxcor  ;; set patch potentials to their y coordinate
-  ]
+  load-vector-data  ; load the vector field
 
+  ;; define the mission vector field from the loaded data
+  ifelse ( is-list? patch-data )
+    [ foreach patch-data [ four-tuple -> ask patch first four-tuple item 1 four-tuple [ set behavior_x item 2 four-tuple set behavior_y item 3 four-tuple]]]
+    [ user-message "You need to load in patch data first!" ]
+  display
   ;; initialize the uuv
   create-uuvs 1 [
-    setxy 5 0
+    setxy 5 2
     set color red  ;; set the color to make it stand out
   ]
 
@@ -47,8 +53,17 @@ to color-potential
 end
 
 to go
-  ;; seek to minimize the potential of the uuv
-  ask uuvs [downhill potential]  ;; TODO: the downhill algorithm shouldn't be used for a real simulation
+  ;; read the behavior
+  ask uuvs [
+    let cur_dx [behavior_x] of patch-here  ;; TODO: replace patch-here with patchxy to account for nav error
+    let cur_dy [behavior_y] of patch-here
+    ; convert the vector to a heading
+    let new_head_rad acos (cur_dx / (cur_dx + cur_dy + .001))  ; temp fix to avoid divide by 0
+    let new_head_deg (new_head_rad * 180 / pi)
+    show new_head_deg
+    fd 1
+  ]
+
 
   tick  ;; next simulation step
 end
@@ -107,8 +122,8 @@ end
 GRAPHICS-WINDOW
 210
 10
-647
-448
+491
+292
 -1
 -1
 13.0
@@ -121,10 +136,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--16
-16
--16
-16
+0
+20
+0
+20
 0
 0
 1
