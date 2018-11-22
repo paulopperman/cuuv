@@ -58,9 +58,11 @@ to go
     let cur_dx [behavior_x] of patch-here  ;; TODO: replace patch-here with patchxy to account for nav error
     let cur_dy [behavior_y] of patch-here
     ; convert the vector to a heading
-    let new_head_rad acos (cur_dx / (cur_dx + cur_dy + .001))  ; temp fix to avoid divide by 0
-    let new_head_deg (new_head_rad * 180 / pi)
+    let new_head_deg atan cur_dx cur_dy  ;FIXME: this crashes out when input is 0
+    ; let new_head_rad acos (cur_dx / (cur_dx + cur_dy + .001))  ; temp fix to avoid divide by 0
+    ; let new_head_deg (new_head_rad * 180 / pi)
     show new_head_deg
+    set heading new_head_deg
     fd 1
   ]
 
