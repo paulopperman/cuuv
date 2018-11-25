@@ -5,6 +5,7 @@
 
 __includes [
   "environment_setup.nls"
+  "threat_uuv_procedures.nls"
 ]
 
 ;; set global variables
@@ -53,21 +54,8 @@ to color-potential
 end
 
 to go
-  ;; read the behavior
-  ask uuvs [
-    let cur_dx [behavior_x] of patch-here  ;; TODO: replace patch-here with patchxy to account for nav error
-    let cur_dy [behavior_y] of patch-here
-    ; convert the vector to a heading
-    carefully [
-      let new_head_deg atan cur_dx cur_dy
-      show new_head_deg
-      set heading new_head_deg
-      fd 1
-    ] [
-      ; do nothing because the length of the vector is 0
-    ]
-  ]
 
+  ask uuvs [ navigate-threat-uuv ]  ; move the threat uuv
 
   tick  ;; next simulation step
 end
