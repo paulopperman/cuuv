@@ -1,17 +1,19 @@
 ;; netlogo code to define the map environment
 
-globals [patch-data]
+globals [
+  nav-vector-data
+]
 
 to load-vector-data
 
   ; We check to make sure the file exists first
-  ifelse ( file-exists? "test_patch_data.txt" )
+  ifelse ( file-exists? "nav_field_diagonal_run.txt" )
   [
     ; We are saving the data into a list, so it only needs to be loaded once.
-    set patch-data []
+    set nav-vector-data []
 
     ; This opens the file, so we can use it.
-    file-open "test_patch_data.txt"
+    file-open "nav_field_diagonal_run.txt"
 
     ; Read in all the data in the file
     while [ not file-at-end? ]
@@ -19,7 +21,7 @@ to load-vector-data
       ; file-read gives you variables.  In this case numbers.
       ; We store them in a double list (ex [[1 1 9.9999] [1 2 9.9999] ...
       ; Each iteration we append the next three-tuple to the current list
-      set patch-data sentence patch-data (list (list file-read file-read file-read file-read))
+      set nav-vector-data sentence nav-vector-data (list (list file-read file-read file-read file-read))
     ]
 
     user-message "File loading complete!"
@@ -27,12 +29,13 @@ to load-vector-data
     ; Done reading in patch information.  Close the file.
     file-close
   ]
-  [ user-message "There is no File IO Patch Data.txt file in current directory!" ]
+  [ user-message "File does not exist in current directory!" ]
 end
 
 
 to place-objects
   ;; read a file with the location of objects in the environment
+  
 end
 
 to setup-mission-plan

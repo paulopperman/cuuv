@@ -33,8 +33,8 @@ to setup
   load-vector-data  ; load the vector field
 
   ;; define the mission vector field from the loaded data
-  ifelse ( is-list? patch-data )
-    [ foreach patch-data [ four-tuple -> ask patch first four-tuple item 1 four-tuple [ set behavior_x item 2 four-tuple set behavior_y item 3 four-tuple]]]
+  ifelse ( is-list? nav-vector-data )
+    [ foreach nav-vector-data [ four-tuple -> ask patch first four-tuple item 1 four-tuple [ set behavior_x item 2 four-tuple set behavior_y item 3 four-tuple]]]
     [ user-message "You need to load in patch data first!" ]
   display
   ;; initialize the uuv
