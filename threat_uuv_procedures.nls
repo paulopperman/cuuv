@@ -21,12 +21,16 @@ to-report x-vector-to-avoid-obstacles
   ; procedure to calculate and return the x component of the avoid field at the uuv location
   ; use the uuvs link set to iterate through obstacles
   let obstacle first [end2] of links  ; test with just first obstacle detected
-  let obs_dist [xcor] of obstacle - xcor  ; manually calculate distance to deal with wrapping worlds
-  report 1 / obs_dist
+  let obs_dist_x [xcor] of obstacle - xcor  ; manually calculate distance to deal with wrapping worlds
+  let obs_dist_y [ycor] of obstacle - ycor
+  let obs_dist sqrt (obs_dist_x ^ 2 + obs_dist_y ^ 2)
+  report -.5 * (obs_dist_x / obs_dist)
 end
 
 to-report y-vector-to-avoid-obstacles
   let obstacle first [end2] of links  ; test with just first obstacle detected
-  let obs_dist [ycor] of obstacle - ycor  ; manually calculate distance to deal with wrapping worlds
-  report 1 / obs_dist
+  let obs_dist_x [xcor] of obstacle - xcor  ; manually calculate distance to deal with wrapping worlds
+  let obs_dist_y [ycor] of obstacle - ycor
+  let obs_dist sqrt (obs_dist_x ^ 2 + obs_dist_y ^ 2)
+  report -.5 * (obs_dist_y / obs_dist)
 end
