@@ -1,0 +1,45 @@
+;; netlogo code to define the map environment
+
+globals [patch-data]
+
+to load-vector-data
+
+  ; We check to make sure the file exists first
+  ifelse ( file-exists? "test_patch_data.txt" )
+  [
+    ; We are saving the data into a list, so it only needs to be loaded once.
+    set patch-data []
+
+    ; This opens the file, so we can use it.
+    file-open "test_patch_data.txt"
+
+    ; Read in all the data in the file
+    while [ not file-at-end? ]
+    [
+      ; file-read gives you variables.  In this case numbers.
+      ; We store them in a double list (ex [[1 1 9.9999] [1 2 9.9999] ...
+      ; Each iteration we append the next three-tuple to the current list
+      set patch-data sentence patch-data (list (list file-read file-read file-read file-read))
+    ]
+
+    user-message "File loading complete!"
+
+    ; Done reading in patch information.  Close the file.
+    file-close
+  ]
+  [ user-message "There is no File IO Patch Data.txt file in current directory!" ]
+end
+
+
+to place-objects
+  ;; read a file with the location of objects in the environment
+end
+
+to setup-mission-plan
+  ;; read a file that defines the objective potential field
+  ;; https://github.com/NetLogo/models/blob/master/Code%20Examples/File%20Input%20Example.nlogo
+end
+
+to setup-currents
+  ;; read a file that defines the currents in the environment
+end
