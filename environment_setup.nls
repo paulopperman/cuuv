@@ -2,6 +2,7 @@
 
 globals [
   nav-vector-data
+  object-position-data
 ]
 
 to load-vector-data
@@ -24,17 +25,43 @@ to load-vector-data
       set nav-vector-data sentence nav-vector-data (list (list file-read file-read file-read file-read))
     ]
 
-    user-message "File loading complete!"
+    user-message "Navigation loading complete!"
 
     ; Done reading in patch information.  Close the file.
     file-close
   ]
-  [ user-message "File does not exist in current directory!" ]
+  [ user-message "Navigation file does not exist in current directory!" ]
 end
 
 
 to place-objects
   ;; read a file with the location of objects in the environment
+  ; We check to make sure the file exists first
+  ifelse ( file-exists? "obstacle_points.txt" )
+  [
+    ; We are saving the data into a list, so it only needs to be loaded once.
+    set object-position-data []
+
+    ; This opens the file, so we can use it.
+    file-open "obstacle_points.txt"
+
+    ; Read in all the data in the file
+    while [ not file-at-end? ]
+    [
+
+      set object-position-data sentence object-position-data (list (list file-read file-read))
+    ]
+
+    user-message "Obstacle file loading complete!"
+
+    ; Done reading in patch information.  Close the file.
+    file-close
+  ]
+  [ user-message "Obstacle file does not exist in current directory!" ]
+  
+  ifelse ( is-list? object-position-data )
+    [ foreach object-position-data [obs-coords -> create-rocks 1 [setxy first obs-coords last obs-coords] ] ]  ;;TODO: use values from file
+    [ user-message "You need to load in patch data first!" ]
   
 end
 

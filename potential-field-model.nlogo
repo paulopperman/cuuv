@@ -37,10 +37,15 @@ to setup
     [ foreach nav-vector-data [ four-tuple -> ask patch first four-tuple item 1 four-tuple [ set behavior_x item 2 four-tuple set behavior_y item 3 four-tuple]]]
     [ user-message "You need to load in patch data first!" ]
   display
+
+  ;; initialize obstacles
+  place-objects
+
   ;; initialize the uuv
   create-uuvs 1 [
     setxy 5 2
     set color red  ;; set the color to make it stand out
+    pen-down  ;; trace the path for debugging purposes
   ]
 
   ask patches [color-potential]  ; should redefine how coloring works
@@ -55,7 +60,10 @@ end
 
 to go
 
-  ask uuvs [ navigate-threat-uuv ]  ; move the threat uuv
+  ask uuvs [
+    track-obstacles      ; update obstacle map
+    navigate-threat-uuv  ; move the threat uuv
+  ]
 
   tick  ;; next simulation step
 end
