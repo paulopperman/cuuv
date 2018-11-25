@@ -3,43 +3,119 @@
 ;;
 ;; This software is authored by Team 1.
 
+__includes [
+  "environment_setup.nls"
+  "threat_uuv_procedures.nls"
+]
+
+;; set global variables
+globals [
+  mouse-clicked?  ;; tracking variable for mouse-manager
+]
+
 ;; create agent types
 breed [uuvs uuv]  ;; agents representing the uuv
+breed [rocks rock]  ;; agent representing an obstacle
+
 
 ;; define field parameters for patches
 patches-own [
   potential
+  behavior_x  ; x component of the behavior map vector
+  behavior_y  ; y component of the behavior map vector
 ]
+
+
 
 to setup
   clear-all
 
-  ;; define the initial potential field
-  ask patches [
-    set potential pycor  ;; this is a toy example to test the framework
-  ]
+  load-vector-data  ; load the vector field
 
+  ;; define the mission vector field from the loaded data
+  ifelse ( is-list? patch-data )
+    [ foreach patch-data [ four-tuple -> ask patch first four-tuple item 1 four-tuple [ set behavior_x item 2 four-tuple set behavior_y item 3 four-tuple]]]
+    [ user-message "You need to load in patch data first!" ]
+  display
   ;; initialize the uuv
   create-uuvs 1 [
-    setxy 5 0
+    setxy 5 2
+    set color red  ;; set the color to make it stand out
   ]
+
+  ask patches [color-potential]  ; should redefine how coloring works
 
   reset-ticks
 end
 
+to color-potential
+  ;; color patches to make it look nice
+  set pcolor scale-color green potential -16 16
+end
+
 to go
 
-  ;; seek to minimize the potential of the uuv
-  ask uuvs [downhill potential]  ;; TODO: the downhill algorithm shouldn't be used for a real simulation
+  ask uuvs [ navigate-threat-uuv ]  ; move the threat uuv
 
   tick  ;; next simulation step
+end
+
+to edit-map
+  ;; place an obstacle
+  ;; if mouse-down? [ place-rock mouse-xcor mouse-ycor ]
+  mouse-manager
+
+end
+
+to place-rock [ my-x my-y ]
+  ;; add a rock and update the potential field
+  create-rocks 1 [  ;; add rock at mouse click
+    setxy my-x my-y
+    set color gray
+    set shape "circle"
+    ask patch-here [
+      set potential potential + 5
+    ]
+  ]
+
+  ask patches [color-potential]  ;; update the field colors
+end
+
+to draw-path
+  ;; use the mouse to draw a path in the field
+
+  ifelse mouse-down? [
+    if not mouse-clicked? [
+      set mouse-clicked? true
+      ask patch mouse-xcor mouse-ycor [
+        set potential potential - 1
+      ]
+    ]
+  ] [
+    set mouse-clicked? false
+  ]
+
+  ask patches [color-potential] ;; update field colors
+end
+
+;; mouse management procedures
+;; https://stackoverflow.com/questions/22134822/detecting-a-mouse-click-mouse-up-in-netlogo
+to mouse-manager
+  ifelse mouse-down? [
+    if not mouse-clicked? [
+      set mouse-clicked? true
+      place-rock mouse-xcor mouse-ycor
+    ]
+  ] [
+    set mouse-clicked? false
+  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
 10
-647
-448
+491
+292
 -1
 -1
 13.0
@@ -52,10 +128,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--16
-16
--16
-16
+0
+20
+0
+20
 0
 0
 1
@@ -80,13 +156,47 @@ NIL
 1
 
 BUTTON
-78
-165
-141
-198
+64
+112
+127
+145
 NIL
 go
 NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+85
+187
+165
+220
+NIL
+edit-map
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+60
+263
+149
+296
+NIL
+draw-path
+T
 1
 T
 OBSERVER
@@ -107,7 +217,9 @@ The potential value of the patches defines the potential field.  The autonomous 
 
 ## HOW TO USE IT
 
-(how to use the model, including a description of each of the items in the Interface tab)
+1. Initialize the model by clicking the setup button.
+2. Click the edit-map button to place rocks.  Click the button again when done.
+3. Click go to increment the model by 1 time step.  Repeat to progress through the simulation.
 
 ## THINGS TO NOTICE
 
