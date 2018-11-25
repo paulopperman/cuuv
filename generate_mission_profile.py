@@ -74,3 +74,27 @@ def pnt2line(pnt, start, end):
     nearest = add(nearest, start)
     return (dist, nearest)
 
+
+### Path segment generation
+
+def path_segment(start_point, end_point, world_x, world_y):
+    x_vec_array = []
+    y_vec_array = []
+
+    # loop in y then x to properly shape the array
+    z_crd=0  # define z coordinate to keep everything in the plane for now
+
+    for y_crd in world_y:
+        x_vecs = []
+        y_vecs = []
+        for x_crd in world_x:
+            mod_x, mod_y, mod_z = vector((x_crd,y_crd,z_crd),end_point)
+            dist, point = pnt2line((x_crd, y_crd, z_crd), start_point, end_point)
+            my_dx = point[0] - x_crd
+            my_dy = point[1] - y_crd
+            x_vecs.append(my_dx)
+            y_vecs.append(my_dy)
+        x_vec_array.append(x_vecs)
+        y_vec_array.append(y_vecs)
+        
+    return (x_vec_array, y_vec_array)
