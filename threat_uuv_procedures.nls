@@ -24,7 +24,7 @@ to-report x-vector-to-avoid-obstacles
   let obs_dist_x [xcor] of obstacle - xcor  ; manually calculate distance to deal with wrapping worlds
   let obs_dist_y [ycor] of obstacle - ycor
   let obs_dist sqrt (obs_dist_x ^ 2 + obs_dist_y ^ 2)
-  report -.5 * (obs_dist_x / obs_dist)
+  report -.5 * (obs_dist_x / obs_dist)  ; this should be tuned relative to mission strength.  if its set to 1, it cancels out the mission component
 end
 
 to-report y-vector-to-avoid-obstacles
