@@ -1,14 +1,36 @@
 to navigate-threat-uuv
   ; procedure to get the behavior vector at the uuv location and move
-  let cur_dx [behavior_x] of patch-here  ;; TODO: replace patch-here with patchxy to account for nav error
-    let cur_dy [behavior_y] of patch-here
-    ; convert the vector to a heading
-    carefully [
-      let new_head_deg atan cur_dx cur_dy
-      show new_head_deg  ; for debugging purposes
-      set heading new_head_deg
-      fd 1
-    ] [
+  let cur_dx ([behavior_x] of patch-here + x-vector-to-avoid-obstacles)  ;; TODO: replace patch-here with patchxy to account for nav error
+  let cur_dy ([behavior_y] of patch-here + y-vector-to-avoid-obstacles)
+  ; convert the vector to a heading
+  carefully [
+    let new_head_deg atan cur_dx cur_dy
+    show new_head_deg  ; for debugging purposes
+    set heading new_head_deg
+    fd .5
+  ] [
       ; do nothing because the length of the vector is 0
-    ]
+  ]
+end
+
+to track-obstacles
+  create-links-to rocks  ;; simple stub to test link functionality of tracking
+end
+
+to-report x-vector-to-avoid-obstacles
+  ; procedure to calculate and return the x component of the avoid field at the uuv location
+  ; use the uuvs link set to iterate through obstacles
+  let obstacle first [end2] of links  ; test with just first obstacle detected
+  let obs_dist_x [xcor] of obstacle - xcor  ; manually calculate distance to deal with wrapping worlds
+  let obs_dist_y [ycor] of obstacle - ycor
+  let obs_dist sqrt (obs_dist_x ^ 2 + obs_dist_y ^ 2)
+  report -.5 * (obs_dist_x / obs_dist)  ; this should be tuned relative to mission strength.  if its set to 1, it cancels out the mission component
+end
+
+to-report y-vector-to-avoid-obstacles
+  let obstacle first [end2] of links  ; test with just first obstacle detected
+  let obs_dist_x [xcor] of obstacle - xcor  ; manually calculate distance to deal with wrapping worlds
+  let obs_dist_y [ycor] of obstacle - ycor
+  let obs_dist sqrt (obs_dist_x ^ 2 + obs_dist_y ^ 2)
+  report -.5 * (obs_dist_y / obs_dist)
 end
