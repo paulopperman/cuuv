@@ -11,7 +11,9 @@ __includes [
 ;; set global variables
 globals [
   mouse-clicked?  ;; tracking variable for mouse-manager
+  environment-folder  ; the folder containing environment setup files
 ]
+
 
 ;; create agent types
 breed [uuvs uuv]  ;; agents representing the uuv
@@ -25,26 +27,29 @@ patches-own [
   behavior_y  ; y component of the behavior map vector
 ]
 
+uuvs-own [
+  mission_segment  ; state variable containing the current mission leg
+]
 
 
 to setup
   clear-all
 
-  load-vector-data  ; load the vector field
+  set environment-folder "./test_environment/"  ; the folder containing environment setup files
 
-  ;; define the mission vector field from the loaded data
-  ifelse ( is-list? nav-vector-data )
-    [ foreach nav-vector-data [ four-tuple -> ask patch first four-tuple item 1 four-tuple [ set behavior_x item 2 four-tuple set behavior_y item 3 four-tuple]]]
-    [ user-message "You need to load in patch data first!" ]
-  display
+  load-mission-waypoints word environment-folder "mission_waypoints.txt"
+
+  load-vector-data word environment-folder "mission_leg_0.txt"  ; load the initial vector field
 
   ;; initialize obstacles
-  place-objects
+  place-objects word environment-folder "obstacle_points.txt"
 
   ;; initialize the uuv
   create-uuvs 1 [
-    setxy 5 2
-    set color red  ;; set the color to make it stand out
+    set mission_segment 0  ; start on the first mission leg
+    setxy (random 20) (random 20)
+    set size 2
+    ; set color red  ;; set the color to make it stand out
     pen-down  ;; trace the path for debugging purposes
   ]
 
@@ -55,12 +60,14 @@ end
 
 to color-potential
   ;; color patches to make it look nice
-  set pcolor scale-color green potential -16 16
+  ; set pcolor scale-color green potential -16 16
+  ;set pcolor scale-color green behavior_y -20 20
 end
 
 to go
 
   ask uuvs [
+    update-mission-segment   ; update the mission leg
     track-obstacles      ; update obstacle map
     navigate-threat-uuv  ; move the threat uuv
   ]
@@ -122,11 +129,11 @@ end
 GRAPHICS-WINDOW
 210
 10
-491
-292
+866
+667
 -1
 -1
-13.0
+8.0
 1
 10
 1
@@ -137,11 +144,11 @@ GRAPHICS-WINDOW
 1
 1
 0
-20
+80
 0
-20
-0
-0
+80
+1
+1
 1
 ticks
 30.0
@@ -170,7 +177,7 @@ BUTTON
 145
 NIL
 go
-NIL
+T
 1
 T
 OBSERVER
