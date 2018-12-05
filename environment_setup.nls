@@ -74,7 +74,12 @@ to place-objects [objs-file]
   [ user-message "Obstacle file does not exist in current directory!" ]
   
   ifelse ( is-list? object-position-data )
-    [ foreach object-position-data [obs-coords -> create-rocks 1 [setxy first obs-coords last obs-coords] ] ]
+    [ foreach object-position-data [obs-coords -> create-obstacles 1 [
+      setxy first obs-coords last obs-coords
+      set shape "x"
+      set size 2
+      set color red
+  ] ] ]
     [ user-message "You need to load in obstacle data first!" ]
   
 end
@@ -107,7 +112,9 @@ to load-mission-waypoints [waypoints-file]
   ifelse ( is-list? waypoint-data )
     [ foreach waypoint-data [waypoint-coords -> create-waypoints 1 [
       setxy item 1 waypoint-coords item 2 waypoint-coords
-      set waypoint-number item 0 waypoint-coords ] ]
+      set waypoint-number item 0 waypoint-coords 
+      set shape "triangle 2"
+      set color blue] ]
   ]
     [ user-message "You need to load in waypoint data first!" ]
   

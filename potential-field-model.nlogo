@@ -17,8 +17,7 @@ globals [
 
 ;; create agent types
 breed [uuvs uuv]  ;; agents representing the uuv
-breed [rocks rock]  ;; agent representing an obstacle
-
+breed [obstacles obstacle]  ;; agent representing an obstacle
 
 ;; define field parameters for patches
 patches-own [
@@ -47,10 +46,13 @@ to setup
   ;; initialize the uuv
   create-uuvs 1 [
     set mission_segment 0  ; start on the first mission leg
-    setxy (random 20) (random 20)
+    ; setxy (random 20) (random 20)
+    ; start on the initial waypoint
+    setxy (first [xcor] of waypoints with [waypoint-number = 0]) (first [ycor] of waypoints with [waypoint-number = 0])
     set size 2
-    ; set color red  ;; set the color to make it stand out
-    pen-down  ;; trace the path for debugging purposes
+    set shape "airplane"
+    set color yellow
+    pen-down  ;; trace the path
   ]
 
   ask patches [color-potential]  ; should redefine how coloring works
@@ -75,56 +77,58 @@ to go
   tick  ;; next simulation step
 end
 
-to edit-map
-  ;; place an obstacle
-  ;; if mouse-down? [ place-rock mouse-xcor mouse-ycor ]
-  mouse-manager
 
-end
+;to place-rock [ my-x my-y ]
+;  ;; add a rock and update the potential field
+;  create-obstacles 1 [  ;; add rock at mouse click
+;    setxy my-x my-y
+;    set color gray
+;    set shape "circle"
+;    ask patch-here [
+;      set potential potential + 5
+;    ]
+;  ]
+;
+;  ask patches [color-potential]  ;; update the field colors
+;end
 
-to place-rock [ my-x my-y ]
-  ;; add a rock and update the potential field
-  create-rocks 1 [  ;; add rock at mouse click
-    setxy my-x my-y
-    set color gray
-    set shape "circle"
-    ask patch-here [
-      set potential potential + 5
-    ]
-  ]
 
-  ask patches [color-potential]  ;; update the field colors
-end
+;to edit-map
+;  ;; place an obstacle
+;  ;; if mouse-down? [ place-rock mouse-xcor mouse-ycor ]
+;  mouse-manager
+;
+;end
 
-to draw-path
-  ;; use the mouse to draw a path in the field
-
-  ifelse mouse-down? [
-    if not mouse-clicked? [
-      set mouse-clicked? true
-      ask patch mouse-xcor mouse-ycor [
-        set potential potential - 1
-      ]
-    ]
-  ] [
-    set mouse-clicked? false
-  ]
-
-  ask patches [color-potential] ;; update field colors
-end
+;to draw-path
+;  ;; use the mouse to draw a path in the field
+;
+;  ifelse mouse-down? [
+;    if not mouse-clicked? [
+;      set mouse-clicked? true
+;      ask patch mouse-xcor mouse-ycor [
+;        set potential potential - 1
+;      ]
+;    ]
+;  ] [
+;    set mouse-clicked? false
+;  ]
+;
+;  ask patches [color-potential] ;; update field colors
+;end
 
 ;; mouse management procedures
 ;; https://stackoverflow.com/questions/22134822/detecting-a-mouse-click-mouse-up-in-netlogo
-to mouse-manager
-  ifelse mouse-down? [
-    if not mouse-clicked? [
-      set mouse-clicked? true
-      place-rock mouse-xcor mouse-ycor
-    ]
-  ] [
-    set mouse-clicked? false
-  ]
-end
+;to mouse-manager
+;  ifelse mouse-down? [
+;    if not mouse-clicked? [
+;      set mouse-clicked? true
+;      place-rock mouse-xcor mouse-ycor
+;    ]
+;  ] [
+;    set mouse-clicked? false
+;  ]
+;end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -140,8 +144,8 @@ GRAPHICS-WINDOW
 1
 1
 0
-1
-1
+0
+0
 1
 0
 80
@@ -187,39 +191,35 @@ NIL
 NIL
 1
 
-BUTTON
-85
-187
-165
-220
-NIL
-edit-map
-T
+SLIDER
+20
+188
+192
+221
+max-obs-dist
+max-obs-dist
 1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
+100
+11.7
+0.1
 1
+NIL
+HORIZONTAL
 
-BUTTON
-60
-263
-149
-296
-NIL
-draw-path
-T
+SLIDER
+20
+231
+192
+264
+obs-influence
+obs-influence
+0
+2
+0.9
+0.1
 1
-T
-OBSERVER
 NIL
-NIL
-NIL
-NIL
-1
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
