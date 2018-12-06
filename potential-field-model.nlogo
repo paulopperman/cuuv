@@ -34,7 +34,7 @@ uuvs-own [
 to setup
   clear-all
 
-  set environment-folder "./test_environment/"  ; the folder containing environment setup files
+  set environment-folder "./environments/test_environment/"  ; the folder containing environment setup files
 
   load-mission-waypoints word environment-folder "mission_waypoints.txt"
 
