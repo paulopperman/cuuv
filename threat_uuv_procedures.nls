@@ -1,6 +1,5 @@
 directed-link-breed [ sonar-contacts sonar-contact ]  ; link to represent an object detected by sonar
 
-
 to navigate-threat-uuv
   ; procedure to get the behavior vector at the uuv location and move
   let cur_dx (smooth-patch-dx + x-vector-to-avoid-obstacles)  ;; TODO: replace patch-here with patchxy to account for nav error
@@ -9,8 +8,16 @@ to navigate-threat-uuv
   carefully [
     let new_head_deg atan cur_dx cur_dy
     ;show new_head_deg  ; for debugging purposes
-    set heading new_head_deg
-    fd .1
+    let heading_delta subtract-headings heading new_head_deg ; calculate ideal turn order
+    let ordered heading_delta
+    ifelse abs heading_delta <= max-turn [ set ordered heading_delta ] [ 
+      ifelse heading_delta < 0 [set ordered -1 * max-turn] [set ordered max-turn ]  
+    ]
+    ; set heading new_head_deg
+    lt ordered
+    show heading_delta
+    show ordered
+    fd threat-uuv-speed
   ] [
       ; do nothing because the length of the vector is 0
   ]
