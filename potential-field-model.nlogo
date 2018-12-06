@@ -34,7 +34,7 @@ uuvs-own [
 to setup
   clear-all
 
-  set environment-folder "./environments/test_environment/"  ; the folder containing environment setup files
+  set environment-folder "./environments/simple_minefield/"  ; the folder containing environment setup files
 
   load-mission-waypoints word environment-folder "mission_waypoints.txt"
 
@@ -42,6 +42,9 @@ to setup
 
   ;; initialize obstacles
   place-objects word environment-folder "obstacle_points.txt"
+
+  ;; place the minefield
+  lay-mines word environment-folder "minefield.txt"
 
   ;; initialize the uuv
   create-uuvs 1 [
@@ -133,8 +136,8 @@ end
 GRAPHICS-WINDOW
 210
 10
-866
-667
+858
+659
 -1
 -1
 8.0
@@ -148,9 +151,9 @@ GRAPHICS-WINDOW
 0
 1
 0
-80
+79
 0
-80
+79
 1
 1
 1
