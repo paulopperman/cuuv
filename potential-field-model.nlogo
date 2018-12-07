@@ -31,7 +31,7 @@ uuvs-own [
 ]
 
 
-to setup
+to setup-environment
   clear-all
 
   set environment-folder "./environments/simple_minefield/"  ; the folder containing environment setup files
@@ -46,6 +46,19 @@ to setup
   ;; place the minefield
   lay-mines word environment-folder "minefield.txt"
 
+  setup-uuv
+
+  ask patches [color-potential]  ; should redefine how coloring works
+
+  reset-ticks
+end
+
+to setup-uuv
+
+  ask uuvs [die]
+
+  load-vector-data word environment-folder "mission_leg_0.txt"  ; load the initial vector field
+
   ;; initialize the uuv
   create-uuvs 1 [
     set mission_segment 0  ; start on the first mission leg
@@ -58,9 +71,8 @@ to setup
     pen-down  ;; trace the path
   ]
 
-  ask patches [color-potential]  ; should redefine how coloring works
-
   reset-ticks
+
 end
 
 to color-potential
@@ -73,7 +85,7 @@ to go
 
   ask uuvs [
     update-mission-segment   ; update the mission leg
-    track-obstacles      ; update obstacle map
+    classify-contacts      ; update obstacle map
     navigate-threat-uuv  ; move the threat uuv
   ]
 
@@ -163,10 +175,10 @@ ticks
 BUTTON
 64
 58
-127
+200
 91
 NIL
-setup
+setup-environment
 NIL
 1
 T
@@ -203,7 +215,7 @@ max-obs-dist
 max-obs-dist
 1
 100
-19.9
+19.3
 0.1
 1
 NIL
@@ -218,7 +230,7 @@ obs-influence
 obs-influence
 0
 2
-0.9
+0.8
 0.1
 1
 NIL
@@ -233,7 +245,7 @@ max-turn
 max-turn
 0
 100
-6.0
+3.0
 1
 1
 NIL
@@ -248,11 +260,28 @@ threat-uuv-speed
 threat-uuv-speed
 0
 .5
-0.05
+0.4
 .01
 1
 NIL
 HORIZONTAL
+
+BUTTON
+63
+14
+151
+47
+NIL
+setup-uuv
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?

@@ -1,4 +1,7 @@
 directed-link-breed [ sonar-contacts sonar-contact ]  ; link to represent an object detected by sonar
+directed-link-breed [ nav-contacts nav-contact ]  ; link to represent an obstacle/avoid contact
+
+;; navigation procedures
 
 to navigate-threat-uuv
   ; procedure to get the behavior vector at the uuv location and move
@@ -42,19 +45,14 @@ to-report smooth-patch-dy
   report this_y ; FIXME: no smoothing until bugs worked out
 end
 
-
-to track-obstacles
-  create-sonar-contacts-to obstacles  ;; simple stub to test link functionality of tracking
-end
-
 to-report x-vector-to-avoid-obstacles
   ; procedure to calculate and return the x component of the avoid field at the uuv location
   ; use the uuvs link set to iterate through obstacles
   ; loop through all contacts and sum the dx and dy for each, and return the aggregate dy
   let total_dx 0
   let total_dist 0  
-  ifelse any? sonar-contacts [
-    foreach [end2] of sonar-contacts [ contact -> 
+  ifelse any? nav-contacts [
+    foreach [end2] of nav-contacts [ contact -> 
       let obs_dist_x ([xcor] of contact - xcor)  ; manually calculate distance to deal with wrapping worlds
       let obs_dist_y ([ycor] of contact - ycor)
       let obs_dist sqrt (obs_dist_x ^ 2 + obs_dist_y ^ 2)
@@ -70,8 +68,8 @@ to-report y-vector-to-avoid-obstacles
   ; loop through all contacts and sum the dx and dy for each, and return the aggregate dy
   let total_dy 0
   let total_dist 0  
-  ifelse any? sonar-contacts [
-    foreach [end2] of sonar-contacts [ contact -> 
+  ifelse any? nav-contacts [
+    foreach [end2] of nav-contacts [ contact -> 
       let obs_dist_x ([xcor] of contact - xcor)  ; manually calculate distance to deal with wrapping worlds
       let obs_dist_y ([ycor] of contact - ycor)
       let obs_dist sqrt (obs_dist_x ^ 2 + obs_dist_y ^ 2)
@@ -91,4 +89,20 @@ to update-mission-segment
     show next-file
     load-vector-data next-file
   ]
+end
+
+
+;; sensing and tracking procedures
+
+to track-obstacles
+  ;stub
+end
+
+to-report detect-sonar-contacts
+  ;; create link to any agents in radius
+  
+end
+
+to classify-contacts
+  create-nav-contacts-to obstacles  ;; simple stub to test link functionality of tracking
 end

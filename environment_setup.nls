@@ -4,9 +4,11 @@ globals [
   nav-vector-data
   object-position-data
   waypoint-data
+  minefield-data
 ]
 
 breed [waypoints waypoint]  ; objects to represent navigation waypoints
+breed [mines mine]  ; mine agents
 
 waypoints-own [
   waypoint-number
@@ -117,6 +119,40 @@ to load-mission-waypoints [waypoints-file]
       set color blue] ]
   ]
     [ user-message "You need to load in waypoint data first!" ]
+  
+end
+
+to lay-mines [minefield-file]
+  ; We check to make sure the file exists first
+  ifelse ( file-exists? minefield-file )
+  [
+    ; We are saving the data into a list, so it only needs to be loaded once.
+    set minefield-data []
+
+    ; This opens the file, so we can use it.
+    file-open minefield-file
+
+    ; Read in all the data in the file
+    while [ not file-at-end? ]
+    [
+
+      set minefield-data sentence minefield-data (list (list file-read file-read))  ; x-coord y-coord
+    ]
+
+    user-message "Minefield file loading complete!"
+
+    ; Done reading in patch information.  Close the file.
+    file-close
+  ]
+  [ user-message "Minefield file does not exist in current directory!" ]
+  
+  ifelse ( is-list? minefield-data )
+    [ foreach minefield-data [mine-coords -> create-mines 1 [
+      setxy item 0 mine-coords item 1 mine-coords
+      set shape "target"
+      set color orange] ]
+  ]
+    [ user-message "You need to load minefield data first!" ]
   
 end
 
