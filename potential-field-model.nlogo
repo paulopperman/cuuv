@@ -11,12 +11,13 @@ __includes [
 ;; set global variables
 globals [
   mouse-clicked?  ;; tracking variable for mouse-manager
+  environment-folder  ; the folder containing environment setup files
 ]
+
 
 ;; create agent types
 breed [uuvs uuv]  ;; agents representing the uuv
-breed [rocks rock]  ;; agent representing an obstacle
-
+breed [obstacles obstacle]  ;; agent representing an obstacle
 
 ;; define field parameters for patches
 patches-own [
@@ -25,123 +26,148 @@ patches-own [
   behavior_y  ; y component of the behavior map vector
 ]
 
+uuvs-own [
+  mission_segment  ; state variable containing the current mission leg
+]
 
 
-to setup
+to setup-environment
   clear-all
 
-  load-vector-data  ; load the vector field
+  set environment-folder "./environments/simple_minefield/"  ; the folder containing environment setup files
 
-  ;; define the mission vector field from the loaded data
-  ifelse ( is-list? nav-vector-data )
-    [ foreach nav-vector-data [ four-tuple -> ask patch first four-tuple item 1 four-tuple [ set behavior_x item 2 four-tuple set behavior_y item 3 four-tuple]]]
-    [ user-message "You need to load in patch data first!" ]
-  display
+  load-mission-waypoints word environment-folder "mission_waypoints.txt"
+
+  load-vector-data word environment-folder "mission_leg_0.txt"  ; load the initial vector field
 
   ;; initialize obstacles
-  place-objects
+  place-objects word environment-folder "obstacle_points.txt"
 
-  ;; initialize the uuv
-  create-uuvs 1 [
-    setxy 5 2
-    set color red  ;; set the color to make it stand out
-    pen-down  ;; trace the path for debugging purposes
-  ]
+  ;; place the minefield
+  lay-mines word environment-folder "minefield.txt"
+
+  setup-uuv
 
   ask patches [color-potential]  ; should redefine how coloring works
 
   reset-ticks
 end
 
+to setup-uuv
+
+  ask uuvs [die]
+
+  load-vector-data word environment-folder "mission_leg_0.txt"  ; load the initial vector field
+
+  ;; initialize the uuv
+  create-uuvs 1 [
+    set mission_segment 0  ; start on the first mission leg
+    ; setxy (random 20) (random 20)
+    ; start on the initial waypoint
+    setxy (first [xcor] of waypoints with [waypoint-number = 0]) (first [ycor] of waypoints with [waypoint-number = 0])
+    set size 2
+    set shape "airplane"
+    set color yellow
+    pen-down  ;; trace the path
+  ]
+
+  reset-ticks
+
+end
+
 to color-potential
   ;; color patches to make it look nice
-  set pcolor scale-color green potential -16 16
+  ; set pcolor scale-color green potential -16 16
+  ;set pcolor scale-color green behavior_y -20 20
 end
 
 to go
 
   ask uuvs [
-    track-obstacles      ; update obstacle map
+    update-mission-segment   ; Checks current position, and updates mission segment and associated vector profiles if necessay
+    classify-contacts      ; Looks around UUV, gets all contacts (mines, obstacles) and determines what kind of contact it is.
     navigate-threat-uuv  ; move the threat uuv
   ]
 
   tick  ;; next simulation step
 end
 
-to edit-map
-  ;; place an obstacle
-  ;; if mouse-down? [ place-rock mouse-xcor mouse-ycor ]
-  mouse-manager
 
-end
+;to place-rock [ my-x my-y ]
+;  ;; add a rock and update the potential field
+;  create-obstacles 1 [  ;; add rock at mouse click
+;    setxy my-x my-y
+;    set color gray
+;    set shape "circle"
+;    ask patch-here [
+;      set potential potential + 5
+;    ]
+;  ]
+;
+;  ask patches [color-potential]  ;; update the field colors
+;end
 
-to place-rock [ my-x my-y ]
-  ;; add a rock and update the potential field
-  create-rocks 1 [  ;; add rock at mouse click
-    setxy my-x my-y
-    set color gray
-    set shape "circle"
-    ask patch-here [
-      set potential potential + 5
-    ]
-  ]
 
-  ask patches [color-potential]  ;; update the field colors
-end
+;to edit-map
+;  ;; place an obstacle
+;  ;; if mouse-down? [ place-rock mouse-xcor mouse-ycor ]
+;  mouse-manager
+;
+;end
 
-to draw-path
-  ;; use the mouse to draw a path in the field
-
-  ifelse mouse-down? [
-    if not mouse-clicked? [
-      set mouse-clicked? true
-      ask patch mouse-xcor mouse-ycor [
-        set potential potential - 1
-      ]
-    ]
-  ] [
-    set mouse-clicked? false
-  ]
-
-  ask patches [color-potential] ;; update field colors
-end
+;to draw-path
+;  ;; use the mouse to draw a path in the field
+;
+;  ifelse mouse-down? [
+;    if not mouse-clicked? [
+;      set mouse-clicked? true
+;      ask patch mouse-xcor mouse-ycor [
+;        set potential potential - 1
+;      ]
+;    ]
+;  ] [
+;    set mouse-clicked? false
+;  ]
+;
+;  ask patches [color-potential] ;; update field colors
+;end
 
 ;; mouse management procedures
 ;; https://stackoverflow.com/questions/22134822/detecting-a-mouse-click-mouse-up-in-netlogo
-to mouse-manager
-  ifelse mouse-down? [
-    if not mouse-clicked? [
-      set mouse-clicked? true
-      place-rock mouse-xcor mouse-ycor
-    ]
-  ] [
-    set mouse-clicked? false
-  ]
-end
+;to mouse-manager
+;  ifelse mouse-down? [
+;    if not mouse-clicked? [
+;      set mouse-clicked? true
+;      place-rock mouse-xcor mouse-ycor
+;    ]
+;  ] [
+;    set mouse-clicked? false
+;  ]
+;end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
 10
-491
-292
+858
+659
 -1
 -1
-13.0
+8.0
 1
 10
 1
 1
 1
 0
+0
+0
+1
+0
+79
+0
+79
 1
 1
-1
-0
-20
-0
-20
-0
-0
 1
 ticks
 30.0
@@ -149,10 +175,10 @@ ticks
 BUTTON
 64
 58
-127
+200
 91
 NIL
-setup
+setup-environment
 NIL
 1
 T
@@ -170,23 +196,6 @@ BUTTON
 145
 NIL
 go
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-85
-187
-165
-220
-NIL
-edit-map
 T
 1
 T
@@ -197,14 +206,74 @@ NIL
 NIL
 1
 
-BUTTON
-60
-263
-149
-296
+SLIDER
+20
+188
+192
+221
+max-obs-dist
+max-obs-dist
+1
+100
+9.8
+0.1
+1
 NIL
-draw-path
-T
+HORIZONTAL
+
+SLIDER
+20
+231
+192
+264
+obs-influence
+obs-influence
+0
+2
+1.0
+0.1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+20
+279
+192
+312
+max-turn
+max-turn
+0
+100
+1.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+22
+326
+194
+359
+threat-uuv-speed
+threat-uuv-speed
+0
+.5
+0.06
+.01
+1
+NIL
+HORIZONTAL
+
+BUTTON
+63
+14
+151
+47
+NIL
+setup-uuv
+NIL
 1
 T
 OBSERVER
@@ -448,6 +517,14 @@ Polygon -7500403 true true 165 180 165 210 225 180 255 120 210 135
 Polygon -7500403 true true 135 105 90 60 45 45 75 105 135 135
 Polygon -7500403 true true 165 105 165 135 225 105 255 45 210 60
 Polygon -7500403 true true 135 90 120 45 150 15 180 45 165 90
+
+rock
+false
+0
+Circle -7500403 true true 63 108 85
+Circle -7500403 true true 96 81 108
+Circle -7500403 true true 146 131 67
+Rectangle -7500403 true true 75 165 195 195
 
 sheep
 false

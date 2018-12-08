@@ -3,18 +3,27 @@
 globals [
   nav-vector-data
   object-position-data
+  waypoint-data
+  minefield-data
 ]
 
-to load-vector-data
+breed [waypoints waypoint]  ; objects to represent navigation waypoints
+breed [mines mine]  ; mine agents
+
+waypoints-own [
+  waypoint-number
+]
+
+to load-vector-data [file-name]
 
   ; We check to make sure the file exists first
-  ifelse ( file-exists? "nav_field_diagonal_run.txt" )
+  ifelse ( file-exists? file-name)
   [
     ; We are saving the data into a list, so it only needs to be loaded once.
     set nav-vector-data []
 
     ; This opens the file, so we can use it.
-    file-open "nav_field_diagonal_run.txt"
+    file-open file-name
 
     ; Read in all the data in the file
     while [ not file-at-end? ]
@@ -25,25 +34,32 @@ to load-vector-data
       set nav-vector-data sentence nav-vector-data (list (list file-read file-read file-read file-read))
     ]
 
-    user-message "Navigation loading complete!"
+    ; user-message "Navigation loading complete!"
 
     ; Done reading in patch information.  Close the file.
     file-close
   ]
   [ user-message "Navigation file does not exist in current directory!" ]
+  
+  ;; define the mission vector field from the loaded data
+  ifelse ( is-list? nav-vector-data )
+    [ foreach nav-vector-data [ four-tuple -> ask patch first four-tuple item 1 four-tuple [ set behavior_x item 2 four-tuple set behavior_y item 3 four-tuple]]]
+    [ user-message "You need to load in patch data first!" ]
+  display
+  
 end
 
 
-to place-objects
+to place-objects [objs-file]
   ;; read a file with the location of objects in the environment
   ; We check to make sure the file exists first
-  ifelse ( file-exists? "obstacle_points.txt" )
+  ifelse ( file-exists? objs-file )
   [
     ; We are saving the data into a list, so it only needs to be loaded once.
     set object-position-data []
 
     ; This opens the file, so we can use it.
-    file-open "obstacle_points.txt"
+    file-open objs-file
 
     ; Read in all the data in the file
     while [ not file-at-end? ]
@@ -60,8 +76,83 @@ to place-objects
   [ user-message "Obstacle file does not exist in current directory!" ]
   
   ifelse ( is-list? object-position-data )
-    [ foreach object-position-data [obs-coords -> create-rocks 1 [setxy first obs-coords last obs-coords] ] ]  ;;TODO: use values from file
-    [ user-message "You need to load in patch data first!" ]
+    [ foreach object-position-data [obs-coords -> create-obstacles 1 [
+      setxy first obs-coords last obs-coords
+      set shape "rock"
+      set size 3
+      set color gray
+  ] ] ]
+    [ user-message "You need to load in obstacle data first!" ]
+  
+end
+
+to load-mission-waypoints [waypoints-file]
+   ;; read a file with the location of waypoints
+  ; We check to make sure the file exists first
+  ifelse ( file-exists? waypoints-file )
+  [
+    ; We are saving the data into a list, so it only needs to be loaded once.
+    set waypoint-data []
+
+    ; This opens the file, so we can use it.
+    file-open waypoints-file
+
+    ; Read in all the data in the file
+    while [ not file-at-end? ]
+    [
+
+      set waypoint-data sentence waypoint-data (list (list file-read file-read file-read file-read))  ; leg-number x-coord y-coord z-coord
+    ]
+
+    user-message "Waypoint file loading complete!"
+
+    ; Done reading in patch information.  Close the file.
+    file-close
+  ]
+  [ user-message "Waypoint file does not exist in current directory!" ]
+  
+  ifelse ( is-list? waypoint-data )
+    [ foreach waypoint-data [waypoint-coords -> create-waypoints 1 [
+      setxy item 1 waypoint-coords item 2 waypoint-coords
+      set waypoint-number item 0 waypoint-coords 
+      set shape "triangle 2"
+      set color blue] ]
+  ]
+    [ user-message "You need to load in waypoint data first!" ]
+  
+end
+
+to lay-mines [minefield-file]
+  ; We check to make sure the file exists first
+  ifelse ( file-exists? minefield-file )
+  [
+    ; We are saving the data into a list, so it only needs to be loaded once.
+    set minefield-data []
+
+    ; This opens the file, so we can use it.
+    file-open minefield-file
+
+    ; Read in all the data in the file
+    while [ not file-at-end? ]
+    [
+
+      set minefield-data sentence minefield-data (list (list file-read file-read))  ; x-coord y-coord
+    ]
+
+    user-message "Minefield file loading complete!"
+
+    ; Done reading in patch information.  Close the file.
+    file-close
+  ]
+  [ user-message "Minefield file does not exist in current directory!" ]
+  
+  ifelse ( is-list? minefield-data )
+    [ foreach minefield-data [mine-coords -> create-mines 1 [
+      setxy item 0 mine-coords item 1 mine-coords
+      set shape "target"
+      set color orange] ]
+  ]
+    [ user-message "You need to load minefield data first!" ]
   
 end
 

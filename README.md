@@ -25,7 +25,7 @@ The recommended python setup uses anaconda.
 
 1. Download the anaconda installer for python 3.x from [here](https://www.anaconda.com/download/).
 2. Install anaconda, following these [installation instructions](https://docs.anaconda.com/anaconda/install/).
-3. Use [Anaconda Navigator](https://docs.anaconda.com/anaconda/navigator/getting-started/) or the [conda command line interface](https://conda.io/docs/user-guide/getting-started.html) to create a Python 3 environment.  The conda command to create the environment and install packages is `conda create -n nps-env python=3.6 pandas jupyter numpy matplotlib` 
+3. Use [Anaconda Navigator](https://docs.anaconda.com/anaconda/navigator/getting-started/) or the [conda command line interface](https://conda.io/docs/user-guide/getting-started.html) to create a Python 3 environment.  The conda command to create the environment and install packages is `conda create -n nps-env python=3.6 pandas jupyter numpy matplotlib`
 
 # Code Structure
 
@@ -33,7 +33,7 @@ The main simulation loop runs in `potential-field-model.nlogo`.  Detailed
 procedures for simulating specific components and setting up the environment are
 included as separate `*.nls` code files.
 
-The `Mission Profile.ipynb` file is used to develop mission profile patch data to be loaded into the netlogo simulation.
+The `Mission Profile.ipynb` file is used to develop mission profile patch data to be loaded into the netlogo simulation.  The output location must be consistent with the file locations in the netlogo files.
 
 # References
 *Cite applicable references for software or models*
