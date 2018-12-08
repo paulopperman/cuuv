@@ -84,8 +84,8 @@ end
 to go
 
   ask uuvs [
-    update-mission-segment   ; update the mission leg
-    classify-contacts      ; update obstacle map
+    update-mission-segment   ; Checks current position, and updates mission segment and associated vector profiles if necessay
+    classify-contacts      ; Looks around UUV, gets all contacts (mines, obstacles) and determines what kind of contact it is.
     navigate-threat-uuv  ; move the threat uuv
   ]
 
@@ -245,7 +245,7 @@ max-turn
 max-turn
 0
 100
-8.0
+1.0
 1
 1
 NIL

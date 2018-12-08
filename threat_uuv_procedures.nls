@@ -8,22 +8,22 @@ breed [ contact-markers contact-marker ]  ; representing a contact
 
 to navigate-threat-uuv
   ; procedure to get the behavior vector at the uuv location and move
-  let cur_dx (smooth-patch-dx + x-vector-to-avoid-obstacles)  ;; TODO: replace patch-here with patchxy to account for nav error
-  let cur_dy (smooth-patch-dy + y-vector-to-avoid-obstacles)
+  let cur_dx (smooth-patch-dx + x-vector-to-avoid-obstacles)  ;; Gets current position X behavior TODO: replace patch-here with patchxy to account for nav error
+  let cur_dy (smooth-patch-dy + y-vector-to-avoid-obstacles)  ;; Gets current position Y behavior
   ; convert the vector to a heading
   carefully [
-    let new_head_deg atan cur_dx cur_dy
+    let new_head_deg atan cur_dx cur_dy   ;; Math Magic - new heading in degrees based on x/y vectors
     ;show new_head_deg  ; for debugging purposes
     let heading_delta subtract-headings heading new_head_deg ; calculate ideal turn order
-    let ordered heading_delta
-    ifelse abs heading_delta <= max-turn [ set ordered heading_delta ] [ 
-      ifelse heading_delta < 0 [set ordered -1 * max-turn] [set ordered max-turn ]  
+    let ordered_heading heading_delta  ;
+    ifelse abs heading_delta <= max-turn [ set ordered_heading heading_delta ] [ 
+      ifelse heading_delta < 0 [set ordered_heading -1 * max-turn] [set ordered_heading max-turn ]    ;this whole block caps the ordered_heading at max_turn (positive or negative)
     ]
     ; set heading new_head_deg
-    lt ordered
+    lt ordered_heading   ;lt is built in function for left turn on current turtle
     ;show heading_delta
-    ;show ordered
-    fd threat-uuv-speed
+    ;show ordered_heading
+    fd threat-uuv-speed   ;fd is built in function for forward on current turtle
   ] [
       ; do nothing because the length of the vector is 0
   ]
@@ -31,7 +31,7 @@ end
 
 to-report smooth-patch-dx
   ; interpolate between patch centers by scaling 
-  let this_x [behavior_x] of patch-here
+  let this_x [behavior_x] of patch-here   ;Create variable with X behavior of cuent position
 ;  let ahead_x [behavior_x] of patch-ahead 1
 ;  let delta_x (this_x - ahead_x)
 ;  let smooth_x (this_x + ((distance patch-ahead 1) * delta_x))
@@ -41,7 +41,7 @@ end
 
 to-report smooth-patch-dy
   ; interpolate between patch centers by scaling 
-  let this_y [behavior_y] of patch-here
+  let this_y [behavior_y] of patch-here  ;Create variable with Y behavior of cuent position
 ;  let ahead_y [behavior_y] of patch-ahead 1
 ;  let delta_y (this_y - ahead_y)
 ;  let smooth_y (this_y + ((distance patch-ahead 1) * delta_y))
@@ -85,12 +85,12 @@ to-report y-vector-to-avoid-obstacles
 end
 
 to update-mission-segment
-  let next-segment (mission_segment + 1)
-  if any? waypoints-here with [waypoint-number = next-segment] [
-    set mission_segment next-segment
-    let next-file (word environment-folder "mission_leg_" next-segment ".txt" )
-    show next-file
-    load-vector-data next-file
+  let next-segment (mission_segment + 1)    ;Create next-segment var with next mission segment number
+  if any? waypoints-here with [waypoint-number = next-segment] [   ;If we are at next-segment # waypoint
+    set mission_segment next-segment  ;update mission UUV mission segment with next #
+    let next-file (word environment-folder "mission_leg_" next-segment ".txt" )   ;Create string with next segmenet's vector file
+    show next-file  ;Print vector file to console for debug.
+    load-vector-data next-file  ;Load this vector data for UUV movement.
   ]
 end
 
@@ -106,19 +106,19 @@ to detect-sonar-contacts
   ; this is where probability of detection goes, as well as angular or range dependence.
   
   ;; create link to any agents in radius
-  carefully [create-sonar-contacts-to turtles in-radius 10] []
+  carefully [create-sonar-contacts-to turtles in-radius 10] []   ;Any agent within radius 10, create a sonar contact breed entry
   ask waypoints [ ask my-links [die] ]  ; don't track waypoints as sonar contacts
-  ;; remove contacts that are outside sensor field of view
-  ;; remove contacts that fall below detection threshold
+  ;; TODO remove contacts that are outside sensor field of view
+  ;; TODO remove contacts that fall below detection threshold
 end
 
 to classify-contacts
-  let me self
+  let me self   ;Create variable called me with a reference to myself
   ; determine the type of contact.
-  detect-sonar-contacts
+  detect-sonar-contacts  ;calls function
   ; this is where classification errors go
   ask my-sonar-contacts [
-    let obs end2
+    let obs end2  ;create variable obs with the second point of each sonar contact (obs is the detected item)
     ifelse member? obs obstacles [ask me [create-nav-contact-from obs]] [
       if member? obs mines [ask me [create-mine-contact-to obs ]]
     ]
@@ -127,3 +127,25 @@ to classify-contacts
    ;create-nav-contacts-to obstacles  ;; simple stub to test link functionality of tracking
   ;ask link-neighbors [hatch-contact-markers 1 [set shape "flag"]]
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
