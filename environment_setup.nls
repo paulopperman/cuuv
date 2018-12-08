@@ -78,9 +78,9 @@ to place-objects [objs-file]
   ifelse ( is-list? object-position-data )
     [ foreach object-position-data [obs-coords -> create-obstacles 1 [
       setxy first obs-coords last obs-coords
-      set shape "x"
-      set size 2
-      set color red
+      set shape "rock"
+      set size 3
+      set color gray
   ] ] ]
     [ user-message "You need to load in obstacle data first!" ]
   

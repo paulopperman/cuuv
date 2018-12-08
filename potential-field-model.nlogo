@@ -215,7 +215,7 @@ max-obs-dist
 max-obs-dist
 1
 100
-19.3
+9.8
 0.1
 1
 NIL
@@ -230,7 +230,7 @@ obs-influence
 obs-influence
 0
 2
-0.8
+1.0
 0.1
 1
 NIL
@@ -245,7 +245,7 @@ max-turn
 max-turn
 0
 100
-3.0
+8.0
 1
 1
 NIL
@@ -260,7 +260,7 @@ threat-uuv-speed
 threat-uuv-speed
 0
 .5
-0.4
+0.06
 .01
 1
 NIL
@@ -517,6 +517,14 @@ Polygon -7500403 true true 165 180 165 210 225 180 255 120 210 135
 Polygon -7500403 true true 135 105 90 60 45 45 75 105 135 135
 Polygon -7500403 true true 165 105 165 135 225 105 255 45 210 60
 Polygon -7500403 true true 135 90 120 45 150 15 180 45 165 90
+
+rock
+false
+0
+Circle -7500403 true true 63 108 85
+Circle -7500403 true true 96 81 108
+Circle -7500403 true true 146 131 67
+Rectangle -7500403 true true 75 165 195 195
 
 sheep
 false
