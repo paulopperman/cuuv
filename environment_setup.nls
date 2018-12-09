@@ -39,7 +39,7 @@ to load-vector-data [file-name]
     ; Done reading in patch information.  Close the file.
     file-close
   ]
-  [ user-message "Navigation file does not exist in current directory!" ]
+  [ user-message "Navigation file does not exist in current directory!"   ]
   
   ;; define the mission vector field from the loaded data
   ifelse ( is-list? nav-vector-data )
@@ -68,7 +68,7 @@ to place-objects [objs-file]
       set object-position-data sentence object-position-data (list (list file-read file-read))
     ]
 
-    user-message "Obstacle file loading complete!"
+    ;user-message "Obstacle file loading complete!"
 
     ; Done reading in patch information.  Close the file.
     file-close
@@ -104,7 +104,7 @@ to load-mission-waypoints [waypoints-file]
       set waypoint-data sentence waypoint-data (list (list file-read file-read file-read file-read))  ; leg-number x-coord y-coord z-coord
     ]
 
-    user-message "Waypoint file loading complete!"
+    ;user-message "Waypoint file loading complete!"
 
     ; Done reading in patch information.  Close the file.
     file-close
@@ -139,7 +139,7 @@ to lay-mines [minefield-file]
       set minefield-data sentence minefield-data (list (list file-read file-read))  ; x-coord y-coord
     ]
 
-    user-message "Minefield file loading complete!"
+    ;user-message "Minefield file loading complete!"
 
     ; Done reading in patch information.  Close the file.
     file-close

@@ -1,0 +1,67 @@
+to detect-sonar-contacts
+  ; procedure representing the function of the sonar and detector.
+  ; this is where probability of detection goes, as well as angular or range dependence.
+  ;let max_side_angle 120
+  ;let min_side_angle 60
+  ;let forward_angle 60
+  ;; create link to any agents in radius
+  carefully [create-sonar-contacts-to turtles in-radius 10] []   ;Any agent within radius 10, create a sonar contact breed entry
+  ask waypoints [ ask my-links [die] ]  ; don't track waypoints as sonar contacts
+  ;;remove contacts that are outside sensor field of view
+  
+  foreach [end2] of my-sonar-contacts [other_end ->
+    let contact_distance distance other_end
+    ;show contact_distance
+    let relative_bearing subtract-headings towards other_end heading  ; compute relative bearing to contact
+    ;show relative_bearing
+    let in_sidescan_view (( abs relative_bearing < max_side_angle) and (abs relative_bearing > min_side_angle))  ; is the object in view of the sidescan sonar?
+    let in_forward_view ( abs relative_bearing < forward_angle / 2 )  ; is the object in view of the forward sonar?
+    if not (in_sidescan_view or in_forward_view) [ ask other_end [ask my-sonar-contacts [die]]]  ; if it's not in view, kill the contact
+    
+    ;;remove contacts that fall below detection threshold
+    if in_sidescan_view [
+      let p_detect sidescan-probability-detect distance other_end
+      let detected (random-float 1 < p_detect)
+      if not detected [ask other_end [ask my-sonar-contacts [die]]]
+    ]  ; do something to sonar-contact based on range 
+    if in_forward_view [
+      let p_detect forward-probability-detect distance other_end
+      let detected (random-float 1 < p_detect)
+      if not detected [ask other_end [ask my-sonar-contacts [die]]]
+    ]
+  ]
+  
+
+end
+
+to classify-contacts
+  let me self   ;Create variable called me with a reference to myself
+  ; determine the type of contact.
+  detect-sonar-contacts  ;calls function
+  ; this is where classification errors go
+  ask my-sonar-contacts [
+    let obs end2  ;create variable obs with the second point of each sonar contact (obs is the detected item)
+    ifelse member? obs obstacles [ask me [create-nav-contact-from obs]] [
+      if member? obs mines [
+        ask me [create-mine-contact-to obs ]
+        ask obs [set color green] 
+      ]
+    ]
+    die
+  ]
+   ;create-nav-contacts-to obstacles  ;; simple stub to test link functionality of tracking
+  ;ask link-neighbors [hatch-contact-markers 1 [set shape "flag"]]
+end
+
+
+to-report sidescan-probability-detect [target_range]  ; TODO: add angle dependence on probability of detection
+  ifelse target_range < 3 [ report 1 ] [
+    ifelse target_range < 5 [ report .5 ] [ report .1]
+  ]
+end
+
+to-report forward-probability-detect [target_range]
+  ifelse target_range < 3 [ report 1 ] [
+    ifelse target_range < 5 [ report .5 ] [ report .1]
+  ]
+end
