@@ -215,7 +215,7 @@ max-obs-dist
 max-obs-dist
 1
 100
-9.8
+10.0
 0.1
 1
 NIL
@@ -245,7 +245,7 @@ max-turn
 max-turn
 0
 100
-25.0
+5.0
 1
 1
 NIL
@@ -260,7 +260,7 @@ threat-uuv-speed
 threat-uuv-speed
 0
 .5
-0.34
+0.2
 .01
 1
 NIL
@@ -309,7 +309,7 @@ forward_angle
 forward_angle
 0
 100
-49.0
+40.0
 1
 1
 deg
@@ -324,11 +324,29 @@ side_angle
 side_angle
 0
 100
-10.0
+60.0
 1
 1
 deg
 HORIZONTAL
+
+PLOT
+924
+118
+1343
+481
+Percent Mines Detected
+Time (ticks)
+% Mines Detected
+0.0
+2000.0
+0.0
+100.0
+false
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot 100 * (count mine-contacts / count mines)"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -690,6 +708,50 @@ NetLogo 6.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup-environment</setup>
+    <go>go</go>
+    <timeLimit steps="10000"/>
+    <exitCondition>any? uuvs with [mission_segment = 10]</exitCondition>
+    <metric>count mine-contacts / count mines</metric>
+    <steppedValueSet variable="threat-uuv-speed" first="0.1" step="0.1" last="0.5"/>
+    <steppedValueSet variable="side_angle" first="10" step="10" last="60"/>
+    <enumeratedValueSet variable="obs-influence">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-turn">
+      <value value="5"/>
+      <value value="10"/>
+      <value value="20"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="forward_angle" first="10" step="10" last="60"/>
+    <enumeratedValueSet variable="max-obs-dist">
+      <value value="10"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment_just_final" repetitions="5" runMetricsEveryStep="false">
+    <setup>setup-environment</setup>
+    <go>go</go>
+    <timeLimit steps="10000"/>
+    <exitCondition>any? uuvs with [mission_segment = 10]</exitCondition>
+    <metric>count mine-contacts / count mines</metric>
+    <steppedValueSet variable="threat-uuv-speed" first="0.1" step="0.1" last="0.5"/>
+    <steppedValueSet variable="side_angle" first="10" step="10" last="60"/>
+    <enumeratedValueSet variable="obs-influence">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-turn">
+      <value value="5"/>
+      <value value="10"/>
+      <value value="20"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="forward_angle" first="10" step="10" last="60"/>
+    <enumeratedValueSet variable="max-obs-dist">
+      <value value="10"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default

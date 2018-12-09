@@ -91,7 +91,7 @@ to update-mission-segment
   if any? waypoints-here with [waypoint-number = next-segment] [   ;If we are at next-segment # waypoint
     set mission_segment next-segment  ;update mission UUV mission segment with next #
     let next-file (word environment-folder "mission_leg_" next-segment ".txt" )   ;Create string with next segmenet's vector file
-    show next-file  ;Print vector file to console for debug.
+    ; show next-file  ;Print vector file to console for debug.
     load-vector-data next-file  ;Load this vector data for UUV movement.
   ]
 end
