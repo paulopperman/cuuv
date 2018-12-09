@@ -14,6 +14,8 @@ to detect-sonar-contacts
     ;show contact_distance
     let relative_bearing subtract-headings towards other_end heading  ; compute relative bearing to contact
     ;show relative_bearing
+    let max_side_angle (90 + (side_angle / 2))
+    let min_side_angle (90 - (side_angle / 2))
     let in_sidescan_view (( abs relative_bearing < max_side_angle) and (abs relative_bearing > min_side_angle))  ; is the object in view of the sidescan sonar?
     let in_forward_view ( abs relative_bearing < forward_angle / 2 )  ; is the object in view of the forward sonar?
     if not (in_sidescan_view or in_forward_view) [ ask other_end [ask my-sonar-contacts [die]]]  ; if it's not in view, kill the contact
