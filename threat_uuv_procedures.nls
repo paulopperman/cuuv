@@ -1,3 +1,5 @@
+__includes["sensor_functions.nls"]
+
 directed-link-breed [ sonar-contacts sonar-contact ]  ; link to represent an object detected by sonar
 directed-link-breed [ nav-contacts nav-contact ]  ; link to represent an obstacle/avoid contact
 directed-link-breed [ mine-contacts mine-contact ] ; link to represent a mine detection
@@ -89,7 +91,7 @@ to update-mission-segment
   if any? waypoints-here with [waypoint-number = next-segment] [   ;If we are at next-segment # waypoint
     set mission_segment next-segment  ;update mission UUV mission segment with next #
     let next-file (word environment-folder "mission_leg_" next-segment ".txt" )   ;Create string with next segmenet's vector file
-    show next-file  ;Print vector file to console for debug.
+    ; show next-file  ;Print vector file to console for debug.
     load-vector-data next-file  ;Load this vector data for UUV movement.
   ]
 end
@@ -101,32 +103,7 @@ to track-obstacles
   ;stub
 end
 
-to detect-sonar-contacts
-  ; procedure representing the function of the sonar and detector.
-  ; this is where probability of detection goes, as well as angular or range dependence.
-  
-  ;; create link to any agents in radius
-  carefully [create-sonar-contacts-to turtles in-radius 10] []   ;Any agent within radius 10, create a sonar contact breed entry
-  ask waypoints [ ask my-links [die] ]  ; don't track waypoints as sonar contacts
-  ;; TODO remove contacts that are outside sensor field of view
-  ;; TODO remove contacts that fall below detection threshold
-end
 
-to classify-contacts
-  let me self   ;Create variable called me with a reference to myself
-  ; determine the type of contact.
-  detect-sonar-contacts  ;calls function
-  ; this is where classification errors go
-  ask my-sonar-contacts [
-    let obs end2  ;create variable obs with the second point of each sonar contact (obs is the detected item)
-    ifelse member? obs obstacles [ask me [create-nav-contact-from obs]] [
-      if member? obs mines [ask me [create-mine-contact-to obs ]]
-    ]
-    die
-  ]
-   ;create-nav-contacts-to obstacles  ;; simple stub to test link functionality of tracking
-  ;ask link-neighbors [hatch-contact-markers 1 [set shape "flag"]]
-end
 
 
 

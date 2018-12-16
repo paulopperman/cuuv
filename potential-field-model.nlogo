@@ -85,7 +85,7 @@ to go
 
   ask uuvs [
     update-mission-segment   ; Checks current position, and updates mission segment and associated vector profiles if necessay
-    classify-contacts      ; Looks around UUV, gets all contacts (mines, obstacles) and determines what kind of contact it is.
+    if (ticks mod sonar_ping_rate) = 0 [ classify-contacts ]      ; Looks around UUV, gets all contacts (mines, obstacles) and determines what kind of contact it is.  Do this every ping_rate ticks
     navigate-threat-uuv  ; move the threat uuv
   ]
 
@@ -146,10 +146,10 @@ end
 ;end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-10
-858
-659
+619
+13
+1267
+662
 -1
 -1
 8.0
@@ -173,10 +173,10 @@ ticks
 30.0
 
 BUTTON
-64
-58
-200
-91
+800
+679
+936
+712
 NIL
 setup-environment
 NIL
@@ -190,10 +190,10 @@ NIL
 1
 
 BUTTON
-64
-112
-127
-145
+835
+727
+898
+760
 NIL
 go
 T
@@ -207,25 +207,25 @@ NIL
 1
 
 SLIDER
-20
-188
-192
-221
+397
+63
+569
+96
 max-obs-dist
 max-obs-dist
 1
 100
-9.8
+10.0
 0.1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-20
-231
-192
-264
+397
+106
+569
+139
 obs-influence
 obs-influence
 0
@@ -237,46 +237,305 @@ NIL
 HORIZONTAL
 
 SLIDER
-20
-279
-192
-312
+15
+66
+187
+99
 max-turn
 max-turn
 0
 100
-1.0
+5.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-22
-326
-194
-359
+14
+102
+186
+135
 threat-uuv-speed
 threat-uuv-speed
 0
 .5
-0.06
+0.31
 .01
 1
 NIL
 HORIZONTAL
 
 BUTTON
-63
-14
-151
-47
+1127
+684
+1215
+717
 NIL
 setup-uuv
 NIL
 1
 T
 OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+1128
+726
+1209
+759
+hide links
+hide-link
+NIL
+1
+T
+LINK
+NIL
+NIL
+NIL
+NIL
+1
+
+SLIDER
+11
+451
+183
+484
+forward_angle
+forward_angle
+0
+100
+55.0
+1
+1
+deg
+HORIZONTAL
+
+SLIDER
+13
+273
+185
+306
+side_angle
+side_angle
+0
+100
+60.0
+1
+1
+deg
+HORIZONTAL
+
+PLOT
+1295
+14
+1714
+377
+Percent Mines Detected
+Time (ticks)
+% Mines Detected
+0.0
+2000.0
+0.0
+100.0
+false
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot 100 * (count mine-contacts / count mines)"
+
+TEXTBOX
+30
+17
+180
+51
+UUV Hydrodynamic Parameters
+14
+0.0
+1
+
+TEXTBOX
+20
+155
+170
+189
+SONAR Sensor Parameters
+14
+0.0
+1
+
+SLIDER
+201
+273
+373
+306
+side_min_range
+side_min_range
+0
+30
+1.0
+.1
+1
+m
+HORIZONTAL
+
+SLIDER
+384
+273
+571
+306
+side_max_range
+side_max_range
+0
+100
+8.7
+.1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+199
+454
+371
+487
+forward_min_range
+forward_min_range
+0
+100
+0.0
+.1
+1
+m
+HORIZONTAL
+
+SLIDER
+382
+453
+569
+486
+forward_max_range
+forward_max_range
+0
+100
+13.4
+.1
+1
+m
+HORIZONTAL
+
+TEXTBOX
+19
+247
+169
+265
+Side Scan Sonar
+11
+0.0
+1
+
+TEXTBOX
+21
+427
+171
+445
+Forward Look Sonar
+11
+0.0
+1
+
+SLIDER
+13
+317
+185
+350
+side_p_detect
+side_p_detect
+0
+1
+0.89
+.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+18
+200
+214
+233
+sonar_ping_rate
+sonar_ping_rate
+1
+100
+5.0
+1
+1
+ticks/ping
+HORIZONTAL
+
+SLIDER
+11
+496
+183
+529
+forward_p_detect
+forward_p_detect
+0
+1
+0.97
+.01
+1
+NIL
+HORIZONTAL
+
+SWITCH
+11
+540
+191
+573
+forward_detect_mines
+forward_detect_mines
+1
+1
+-1000
+
+SWITCH
+10
+364
+189
+397
+side_detect_obstacles
+side_detect_obstacles
+1
+1
+-1000
+
+TEXTBOX
+406
+10
+556
+44
+UUV Command and Control Parameters
+14
+0.0
+1
+
+BUTTON
+1129
+768
+1211
+801
+NIL
+show-link
+NIL
+1
+T
+LINK
 NIL
 NIL
 NIL
@@ -643,6 +902,50 @@ NetLogo 6.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment" repetitions="5" runMetricsEveryStep="true">
+    <setup>setup-environment</setup>
+    <go>go</go>
+    <timeLimit steps="10000"/>
+    <exitCondition>any? uuvs with [mission_segment = 10]</exitCondition>
+    <metric>count mine-contacts / count mines</metric>
+    <steppedValueSet variable="threat-uuv-speed" first="0.1" step="0.1" last="0.5"/>
+    <steppedValueSet variable="side_angle" first="10" step="10" last="60"/>
+    <enumeratedValueSet variable="obs-influence">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-turn">
+      <value value="5"/>
+      <value value="10"/>
+      <value value="20"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="forward_angle" first="10" step="10" last="60"/>
+    <enumeratedValueSet variable="max-obs-dist">
+      <value value="10"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment_just_final" repetitions="5" runMetricsEveryStep="false">
+    <setup>setup-environment</setup>
+    <go>go</go>
+    <timeLimit steps="10000"/>
+    <exitCondition>any? uuvs with [mission_segment = 10]</exitCondition>
+    <metric>count mine-contacts / count mines</metric>
+    <steppedValueSet variable="threat-uuv-speed" first="0.1" step="0.1" last="0.5"/>
+    <steppedValueSet variable="side_angle" first="10" step="10" last="60"/>
+    <enumeratedValueSet variable="obs-influence">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-turn">
+      <value value="5"/>
+      <value value="10"/>
+      <value value="20"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="forward_angle" first="10" step="10" last="60"/>
+    <enumeratedValueSet variable="max-obs-dist">
+      <value value="10"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
