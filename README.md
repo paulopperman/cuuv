@@ -11,6 +11,8 @@ Repository for threat UUV models and simulation.  Detailed documentation is deve
   * [numpy](http://www.numpy.org/) - python mathematics library
   * [matplotlib](https://matplotlib.org/) - python plotting library
   * [pandas](https://pandas.pydata.org/) - data processing and analysis library
+* R 3.5.1 - statistical analysis language
+  * [IRkernel](https://github.com/IRkernel/IRkernel) - Jupyer notebook kernel for the R language
 
 # Setup / Installation Instructions
 *Describe steps for how to execute the code.*
