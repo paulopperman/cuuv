@@ -5,7 +5,7 @@ to detect-sonar-contacts
   ;let min_side_angle 60
   ;let forward_angle 60
   ;; create link to any agents in radius
-  carefully [create-sonar-contacts-to turtles in-radius 10] []   ;Any agent within radius 10, create a sonar contact breed entry
+  carefully [create-sonar-contacts-to turtles in-radius max list side_max_range forward_max_range] []   ;Any agent within maximum detection value, create a sonar contact breed entry
   ask waypoints [ ask my-links [die] ]  ; don't track waypoints as sonar contacts
   ask self-position-fixes [ask my-in-links [die] ]
   ;;remove contacts that are outside sensor field of view
@@ -22,15 +22,29 @@ to detect-sonar-contacts
     if not (in_sidescan_view or in_forward_view) [ ask other_end [ask my-sonar-contacts [die]]]  ; if it's not in view, kill the contact
     
     ;;remove contacts that fall below detection threshold
+    
+    ; check the side sonar
     if in_sidescan_view [
-      let p_detect sidescan-probability-detect distance other_end
+      let p_detect sidescan-probability-detect (distance other_end) relative_bearing
       let detected (random-float 1 < p_detect)
       if not detected [ask other_end [ask my-sonar-contacts [die]]]
-    ]  ; do something to sonar-contact based on range 
+      
+      ; side sonar doesn't detect obstacles
+      if not side_detect_obstacles [
+        if member? other_end obstacles [ ask other_end [ask my-sonar-contacts [die]]]
+      ]
+    ]
+    
+    ; check the forward sonar
     if in_forward_view [
-      let p_detect forward-probability-detect distance other_end
+      let p_detect forward-probability-detect (distance other_end) relative_bearing
       let detected (random-float 1 < p_detect)
       if not detected [ask other_end [ask my-sonar-contacts [die]]]
+      
+      ; forward sonar doesn't detect mines
+      if not forward_detect_mines [
+        if member? other_end mines [ ask other_end [ask my-sonar-contacts [die]]]
+      ]
     ]
   ]
   
@@ -70,14 +84,26 @@ to classify-contacts
 end
 
 
-to-report sidescan-probability-detect [target_range]  ; TODO: add angle dependence on probability of detection
-  ifelse target_range < 3 [ report 1 ] [
-    ifelse target_range < 5 [ report .5 ] [ report .1]
+to-report sidescan-probability-detect [target_range relative_bearing]  ; TODO: add angle dependence on probability of detection
+  let p_detect 0
+  
+  ; constant probability of detecting within range window
+  ifelse target_range < side_min_range [ set p_detect .1 * side_p_detect ] [
+    ifelse target_range < side_max_range [ set p_detect side_p_detect ] [ set p_detect 0]
   ]
+  
+  let p_det_angle 0
+  ; probability of detection is degraded if 50% off the main axis of the sensor relative to total width
+  ifelse ((abs relative_bearing > (90 - (abs relative_bearing / 4))) and (abs relative_bearing < (90 + (abs relative_bearing / 4)))) [ set p_det_angle 1 ] [ set p_det_angle .5 ]
+  report p_detect * p_det_angle
 end
 
-to-report forward-probability-detect [target_range]
-  ifelse target_range < 3 [ report 1 ] [
-    ifelse target_range < 5 [ report .5 ] [ report .1]
+to-report forward-probability-detect [target_range relative_bearing]
+  let p_detect 0
+  ; constant probability of detection within range window
+  ifelse target_range < forward_min_range [ set p_detect .1 * forward_p_detect ] [
+    ifelse target_range < forward_max_range [ set p_detect forward_p_detect ] [ set p_detect 0]
   ]
+  
+  report p_detect
 end
