@@ -56,6 +56,7 @@ end
 to setup-uuv
 
   ask uuvs [die]
+  ask self-position-fixes [die]
 
   load-vector-data word environment-folder "mission_leg_0.txt"  ; load the initial vector field
 
@@ -69,6 +70,11 @@ to setup-uuv
     set shape "airplane"
     set color yellow
     pen-down  ;; trace the path
+    hatch-self-position-fixes 1 [
+      create-fix-links-to uuvs-here
+      set mission_segment 0
+      set color green
+    ]
   ]
 
   reset-ticks
@@ -88,7 +94,7 @@ to go
     classify-contacts      ; Looks around UUV, gets all contacts (mines, obstacles) and determines what kind of contact it is.
     navigate-threat-uuv  ; move the threat uuv
   ]
-
+  ;show navigation-error
   tick  ;; next simulation step
 end
 
@@ -245,7 +251,7 @@ max-turn
 max-turn
 0
 100
-5.0
+7.0
 1
 1
 NIL
@@ -260,7 +266,7 @@ threat-uuv-speed
 threat-uuv-speed
 0
 .5
-0.2
+0.14
 .01
 1
 NIL
@@ -309,7 +315,7 @@ forward_angle
 forward_angle
 0
 100
-40.0
+60.0
 1
 1
 deg
@@ -347,6 +353,54 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot 100 * (count mine-contacts / count mines)"
+
+SLIDER
+25
+573
+199
+606
+nav-bearing-std
+nav-bearing-std
+0
+.5
+0.05
+.001
+1
+deg
+HORIZONTAL
+
+SLIDER
+27
+626
+199
+659
+nav-velocity-std
+nav-velocity-std
+0
+.5
+0.067
+.001
+1
+NIL
+HORIZONTAL
+
+PLOT
+983
+513
+1183
+663
+plot 1
+NIL
+NIL
+0.0
+10.0
+0.0
+0.1
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot navigation-error"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -747,6 +801,38 @@ NetLogo 6.0.4
       <value value="20"/>
     </enumeratedValueSet>
     <steppedValueSet variable="forward_angle" first="10" step="10" last="60"/>
+    <enumeratedValueSet variable="max-obs-dist">
+      <value value="10"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="nav uncertainty study" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup-environment</setup>
+    <go>go</go>
+    <metric>ask uuv navigation-error</metric>
+    <enumeratedValueSet variable="threat-uuv-speed">
+      <value value="0.14"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="side_angle">
+      <value value="60"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="obs-influence">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-turn">
+      <value value="7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="forward_angle">
+      <value value="60"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nav-velocity-std">
+      <value value="0.005"/>
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nav-bearing-std">
+      <value value="0.005"/>
+      <value value="0.05"/>
+      <value value="0.5"/>
+    </enumeratedValueSet>
     <enumeratedValueSet variable="max-obs-dist">
       <value value="10"/>
     </enumeratedValueSet>
