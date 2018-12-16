@@ -3,29 +3,64 @@ __includes["sensor_functions.nls"]
 directed-link-breed [ sonar-contacts sonar-contact ]  ; link to represent an object detected by sonar
 directed-link-breed [ nav-contacts nav-contact ]  ; link to represent an obstacle/avoid contact
 directed-link-breed [ mine-contacts mine-contact ] ; link to represent a mine detection
+directed-link-breed [ fix-links fix-link ]
 
 breed [ contact-markers contact-marker ]  ; representing a contact
+breed [ self-position-fixes self-position-fix ]  ; representing the UUV's position fix
+
+self-position-fixes-own [
+  mission_segment
+]
+
+mine-contacts-own [
+  mine_error_x
+  mine_error_y
+]
 
 ;; navigation procedures
 
 to navigate-threat-uuv
   ; procedure to get the behavior vector at the uuv location and move
-  let cur_dx (smooth-patch-dx + x-vector-to-avoid-obstacles)  ;; Gets current position X behavior TODO: replace patch-here with patchxy to account for nav error
-  let cur_dy (smooth-patch-dy + y-vector-to-avoid-obstacles)  ;; Gets current position Y behavior
+  let nav_dx 0  ; ordered heading x component from mission profile at position fix
+  let nav_dy 0  ; ordered heading y component from mission profile at position fix
+  let nav_head_deg 0  ; desired heading
+  ;let avoid_x x-vector-to-avoid-obstacles  ; obstacle avoidance x vector from onboard sensors
+  ;let avoid_y y-vector-to-avoid-obstacles  ; obstacle avoidance y vector from onboard sensors
+  
+  ask first [end1] of my-fix-links [
+    set nav_dx smooth-patch-dx  ; get mission profile vector relative to the assumed position fix
+    set nav_dy smooth-patch-dy  ; get mission profile vector relative to the assumed position fix
+  ]
+  
+  ;let cur_dx (smooth-patch-dx + x-vector-to-avoid-obstacles)  ;; Gets current position X behavior TODO: replace patch-here with patchxy to account for nav error
+  ;let cur_dy (smooth-patch-dy + y-vector-to-avoid-obstacles)  ;; Gets current position Y behavior
   ; convert the vector to a heading
   carefully [
-    let new_head_deg atan cur_dx cur_dy   ;; Math Magic - new heading in degrees based on x/y vectors
+    let cur_dx (nav_dx + x-vector-to-avoid-obstacles)
+    let cur_dy (nav_dy + y-vector-to-avoid-obstacles)
+    set nav_head_deg atan cur_dx cur_dy   ;; Math Magic - new heading in degrees based on x/y vectors
     ;show new_head_deg  ; for debugging purposes
-    let heading_delta subtract-headings heading new_head_deg ; calculate ideal turn order
+    let heading_delta subtract-headings heading nav_head_deg ; calculate ideal turn order
     let ordered_heading heading_delta  ;
     ifelse abs heading_delta <= max-turn [ set ordered_heading heading_delta ] [ 
       ifelse heading_delta < 0 [set ordered_heading -1 * max-turn] [set ordered_heading max-turn ]    ;this whole block caps the ordered_heading at max_turn (positive or negative)
     ]
     ; set heading new_head_deg
-    lt ordered_heading   ;lt is built in function for left turn on current turtle
     ;show heading_delta
     ;show ordered_heading
-    fd threat-uuv-speed   ;fd is built in function for forward on current turtle
+    
+    ; move the uuv with noise
+    let noisy_heading ordered_heading + ( random-normal 0 nav-bearing-std )   ;lt is built in function for left turn on current turtle  add gaussian noise to angle
+    show noisy_heading
+    lt noisy_heading
+    let noisy_speed threat-uuv-speed + ( random-normal 0 nav-velocity-std )   ;fd is built in function for forward on current turtle
+    fd noisy_speed
+    
+    ; move the position fix exactly
+    ask first [end1] of my-fix-links [
+      lt ordered_heading
+      fd threat-uuv-speed
+    ]
   ] [
       ; do nothing because the length of the vector is 0
   ]
@@ -87,16 +122,27 @@ to-report y-vector-to-avoid-obstacles
 end
 
 to update-mission-segment
-  let next-segment (mission_segment + 1)    ;Create next-segment var with next mission segment number
-  if any? waypoints-here with [waypoint-number = next-segment] [   ;If we are at next-segment # waypoint
-    set mission_segment next-segment  ;update mission UUV mission segment with next #
-    let next-file (word environment-folder "mission_leg_" next-segment ".txt" )   ;Create string with next segmenet's vector file
-    ; show next-file  ;Print vector file to console for debug.
-    load-vector-data next-file  ;Load this vector data for UUV movement.
+  
+  ask first [end1] of my-fix-links [ 
+    let next-segment (mission_segment + 1)    ;Create next-segment var with next mission segment number
+    if any? waypoints-here with [waypoint-number = next-segment] [   ;If we are at next-segment # waypoint
+      set mission_segment next-segment  ;update mission UUV mission segment with next #
+      let next-file (word environment-folder "mission_leg_" next-segment ".txt" )   ;Create string with next segmenet's vector file
+      ; show next-file  ;Print vector file to console for debug.
+      load-vector-data next-file  ;Load this vector data for UUV movement.
+    ]
   ]
 end
 
+to-report navigation-error
+  let nav-error 0
+  ask uuvs [
+    set nav-error distance first [end1] of my-fix-links
+  ]
+  report nav-error
+end
 
+  
 ;; sensing and tracking procedures
 
 to track-obstacles
