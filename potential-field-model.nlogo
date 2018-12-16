@@ -221,7 +221,7 @@ max-obs-dist
 max-obs-dist
 1
 100
-10.0
+13.6
 0.1
 1
 NIL
@@ -251,7 +251,7 @@ max-turn
 max-turn
 0
 100
-7.0
+6.0
 1
 1
 NIL
@@ -266,7 +266,7 @@ threat-uuv-speed
 threat-uuv-speed
 0
 .5
-0.14
+0.2
 .01
 1
 NIL
@@ -315,7 +315,7 @@ forward_angle
 forward_angle
 0
 100
-60.0
+40.0
 1
 1
 deg
@@ -398,7 +398,7 @@ side_max_range
 side_max_range
 0
 100
-8.7
+6.4
 .1
 1
 NIL
@@ -428,7 +428,7 @@ forward_max_range
 forward_max_range
 0
 100
-13.4
+11.6
 .1
 1
 m
@@ -463,7 +463,7 @@ side_p_detect
 side_p_detect
 0
 1
-0.89
+0.94
 .01
 1
 NIL
@@ -478,7 +478,7 @@ sonar_ping_rate
 sonar_ping_rate
 1
 100
-5.0
+1.0
 1
 1
 ticks/ping
@@ -493,7 +493,7 @@ forward_p_detect
 forward_p_detect
 0
 1
-0.97
+0.96
 .01
 1
 NIL
@@ -547,6 +547,54 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+31
+657
+203
+690
+nav-bearing-std
+nav-bearing-std
+0
+5
+0.05
+.001
+1
+NIL
+HORIZONTAL
+
+SLIDER
+37
+716
+209
+749
+nav-velocity-std
+nav-velocity-std
+0
+1
+0.05
+.001
+1
+NIL
+HORIZONTAL
+
+PLOT
+1297
+386
+1715
+688
+Position Error
+ticks
+error
+0.0
+1.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot navigation-error"
 
 @#$#@#$#@
 ## WHAT IS IT?
