@@ -91,6 +91,7 @@ to go
 
   ask uuvs [
     update-mission-segment   ; Checks current position, and updates mission segment and associated vector profiles if necessay
+    current-drift
     if (ticks mod sonar_ping_rate) = 0 [ classify-contacts ]      ; Looks around UUV, gets all contacts (mines, obstacles) and determines what kind of contact it is.  Do this every ping_rate ticks
     navigate-threat-uuv  ; move the threat uuv
   ]
@@ -98,6 +99,13 @@ to go
   tick  ;; next simulation step
 end
 
+to current-drift
+  let drift_x current-speed * sin current-heading
+  let drift_y current-speed * cos current-heading
+  ask ( turtle-set uuvs self-position-fixes )  [  ; anything that isn't tied down drifts with the current
+    carefully [setxy (xcor + drift_x) (ycor + drift_y) ] [ ]  ; do this carefully to avoid out of bounds errors at world edge
+  ]
+end
 
 ;to place-rock [ my-x my-y ]
 ;  ;; add a rock and update the potential field
@@ -266,7 +274,7 @@ threat-uuv-speed
 threat-uuv-speed
 0
 .5
-0.14
+0.2
 .01
 1
 NIL
@@ -595,6 +603,36 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot navigation-error"
+
+SLIDER
+566
+694
+738
+727
+current-heading
+current-heading
+0
+359
+121.0
+1
+1
+deg
+HORIZONTAL
+
+SLIDER
+571
+748
+743
+781
+current-speed
+current-speed
+0
+1
+0.076
+.001
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
