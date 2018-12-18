@@ -7,6 +7,7 @@ to detect-sonar-contacts
   ;; create link to any agents in radius
   carefully [create-sonar-contacts-to turtles in-radius max list side_max_range forward_max_range] []   ;Any agent within maximum detection value, create a sonar contact breed entry
   ask waypoints [ ask my-links [die] ]  ; don't track waypoints as sonar contacts
+  ask self-position-fixes [ask my-in-links [die] ]
   ;;remove contacts that are outside sensor field of view
   
   foreach [end2] of my-sonar-contacts [other_end ->
@@ -51,6 +52,7 @@ to detect-sonar-contacts
 end
 
 to classify-contacts
+  ; TODO: should include a confidence value with the classification
   let me self   ;Create variable called me with a reference to myself
   ; determine the type of contact.
   detect-sonar-contacts  ;calls function
@@ -59,7 +61,19 @@ to classify-contacts
     let obs end2  ;create variable obs with the second point of each sonar contact (obs is the detected item)
     ifelse member? obs obstacles [ask me [create-nav-contact-from obs]] [
       if member? obs mines [
-        ask me [create-mine-contact-to obs ]
+        ask me [create-mine-contact-to obs [
+          ; TODO in progress- assign position error to mines based on uuv position error
+          let mine_error_dist 0
+          let mine_error_head 0
+          ask end1 [
+            ask my-fix-links [
+              set mine_error_dist link-length
+              set mine_error_head link-heading
+            ]
+          ]
+          ; calculate position error at time of detection and store it in the link
+        ]
+        ]
         ask obs [set color green] 
       ]
     ]

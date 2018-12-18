@@ -56,6 +56,7 @@ end
 to setup-uuv
 
   ask uuvs [die]
+  ask self-position-fixes [die]
 
   load-vector-data word environment-folder "mission_leg_0.txt"  ; load the initial vector field
 
@@ -69,6 +70,11 @@ to setup-uuv
     set shape "airplane"
     set color yellow
     pen-down  ;; trace the path
+    hatch-self-position-fixes 1 [
+      create-fix-links-to uuvs-here
+      set mission_segment 0
+      set color green
+    ]
   ]
 
   reset-ticks
@@ -85,13 +91,21 @@ to go
 
   ask uuvs [
     update-mission-segment   ; Checks current position, and updates mission segment and associated vector profiles if necessay
+    current-drift
     if (ticks mod sonar_ping_rate) = 0 [ classify-contacts ]      ; Looks around UUV, gets all contacts (mines, obstacles) and determines what kind of contact it is.  Do this every ping_rate ticks
     navigate-threat-uuv  ; move the threat uuv
   ]
-
+  ;show navigation-error
   tick  ;; next simulation step
 end
 
+to current-drift
+  let drift_x current-speed * sin current-heading
+  let drift_y current-speed * cos current-heading
+  ask ( turtle-set uuvs self-position-fixes )  [  ; anything that isn't tied down drifts with the current
+    carefully [setxy (xcor + drift_x) (ycor + drift_y) ] [ ]  ; do this carefully to avoid out of bounds errors at world edge
+  ]
+end
 
 ;to place-rock [ my-x my-y ]
 ;  ;; add a rock and update the potential field
@@ -215,7 +229,7 @@ max-obs-dist
 max-obs-dist
 1
 100
-10.0
+13.6
 0.1
 1
 NIL
@@ -245,7 +259,7 @@ max-turn
 max-turn
 0
 100
-5.0
+6.0
 1
 1
 NIL
@@ -260,7 +274,7 @@ threat-uuv-speed
 threat-uuv-speed
 0
 .5
-0.31
+0.2
 .01
 1
 NIL
@@ -309,7 +323,7 @@ forward_angle
 forward_angle
 0
 100
-55.0
+60.0
 1
 1
 deg
@@ -392,7 +406,7 @@ side_max_range
 side_max_range
 0
 100
-8.7
+6.4
 .1
 1
 NIL
@@ -422,7 +436,7 @@ forward_max_range
 forward_max_range
 0
 100
-13.4
+11.6
 .1
 1
 m
@@ -457,7 +471,7 @@ side_p_detect
 side_p_detect
 0
 1
-0.89
+0.94
 .01
 1
 NIL
@@ -472,7 +486,7 @@ sonar_ping_rate
 sonar_ping_rate
 1
 100
-5.0
+1.0
 1
 1
 ticks/ping
@@ -487,7 +501,7 @@ forward_p_detect
 forward_p_detect
 0
 1
-0.97
+0.96
 .01
 1
 NIL
@@ -541,6 +555,84 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+31
+657
+203
+690
+nav-bearing-std
+nav-bearing-std
+0
+5
+0.05
+.001
+1
+NIL
+HORIZONTAL
+
+SLIDER
+37
+716
+209
+749
+nav-velocity-std
+nav-velocity-std
+0
+1
+0.05
+.001
+1
+NIL
+HORIZONTAL
+
+PLOT
+1297
+386
+1715
+688
+Position Error
+ticks
+error
+0.0
+1.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot navigation-error"
+
+SLIDER
+566
+694
+738
+727
+current-heading
+current-heading
+0
+359
+121.0
+1
+1
+deg
+HORIZONTAL
+
+SLIDER
+571
+748
+743
+781
+current-speed
+current-speed
+0
+1
+0.076
+.001
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -941,6 +1033,38 @@ NetLogo 6.0.4
       <value value="20"/>
     </enumeratedValueSet>
     <steppedValueSet variable="forward_angle" first="10" step="10" last="60"/>
+    <enumeratedValueSet variable="max-obs-dist">
+      <value value="10"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="nav uncertainty study" repetitions="10" runMetricsEveryStep="true">
+    <setup>setup-environment</setup>
+    <go>go</go>
+    <metric>ask uuv navigation-error</metric>
+    <enumeratedValueSet variable="threat-uuv-speed">
+      <value value="0.14"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="side_angle">
+      <value value="60"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="obs-influence">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-turn">
+      <value value="7"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="forward_angle">
+      <value value="60"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nav-velocity-std">
+      <value value="0.005"/>
+      <value value="0.05"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nav-bearing-std">
+      <value value="0.005"/>
+      <value value="0.05"/>
+      <value value="0.5"/>
+    </enumeratedValueSet>
     <enumeratedValueSet variable="max-obs-dist">
       <value value="10"/>
     </enumeratedValueSet>
