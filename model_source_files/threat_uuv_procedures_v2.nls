@@ -1,0 +1,241 @@
+__includes["./model_source_files/sensor_functions_v2.nls"]
+
+;;; Model to define the UUV
+
+; define UUV agents
+breed [uuvs uuv]  ;; agents representing the uuv
+uuvs-own [
+  mission_segment  ; state variable containing the current mission leg
+  sensor-di
+  sensor-sl
+]
+
+
+;; define navigation agents
+breed [ self-position-fixes self-position-fix ]  ; representing the UUV's position fix
+self-position-fixes-own [
+  mission_segment
+]
+
+directed-link-breed [ fix-links fix-link ]  ; the link to the self position
+
+
+;;;; Define Globals
+globals [ 
+  ordered-heading
+  noisy-heading
+]
+
+
+;;;;;;;;;;;;;;;; UUV Setup Procedure
+
+to setup-uuv
+
+  ;; clear any leftover agents
+  ask uuvs [die]
+  ask self-position-fixes [die]
+
+  set number-of-collisions 0
+  
+  ;; set default sonar parameters
+  set max-sonar-range 1000  ;; set default area to calculate snr
+
+
+  set end-reached false
+
+  convert-parameters
+  show "parameters converted"
+  set max-nav-error 0  ; initialize global
+
+  ; load-vector-data word environment-folder "mission_leg_0.txt"  ; load the initial vector field
+
+  ;; initialize the uuv
+  create-uuvs 1 [
+    set mission_segment 0  ; start on the first mission leg
+    face waypoint 1
+    ; setxy (random 20) (random 20)
+    ; start on the initial waypoint
+    setxy (first [xcor] of waypoints with [waypoint-number = 0]) (first [ycor] of waypoints with [waypoint-number = 0])
+    
+    ;; intialize sensor parameters
+    ;set sensor-di di
+    set sensor-sl source-level
+    
+    set size 2
+    set shape "airplane"
+    set color yellow
+    pen-down  ;; trace the path
+    hatch-self-position-fixes 1 [
+      create-fix-links-to uuvs-here
+      set mission_segment 0
+      set color green
+    ]
+  ]
+
+  reset-ticks
+
+end
+
+
+;;;;;;;;; navigation procedures
+
+to navigate-threat-uuv
+  ; procedure to get the behavior vector at the uuv location and move
+  let nav_dx 0  ; ordered heading x component from mission profile at position fix
+  let nav_dy 0  ; ordered heading y component from mission profile at position fix
+  let nav_head_deg 0  ; desired heading
+  ;let avoid_x x-vector-to-avoid-obstacles  ; obstacle avoidance x vector from onboard sensors
+  ;let avoid_y y-vector-to-avoid-obstacles  ; obstacle avoidance y vector from onboard sensors
+  
+  ask first [end1] of my-fix-links [
+    set nav_dx smooth-patch-dx  ; get mission profile vector relative to the assumed position fix
+    set nav_dy smooth-patch-dy  ; get mission profile vector relative to the assumed position fix
+  ]
+  
+  ;let cur_dx (smooth-patch-dx + x-vector-to-avoid-obstacles)  ;; Gets current position X behavior TODO: replace patch-here with patchxy to account for nav error
+  ;let cur_dy (smooth-patch-dy + y-vector-to-avoid-obstacles)  ;; Gets current position Y behavior
+  ; convert the vector to a heading
+  carefully [
+    let cur_dx (nav_dx + x-vector-to-avoid-obstacles)
+    let cur_dy (nav_dy + y-vector-to-avoid-obstacles)
+    set nav_head_deg atan cur_dx cur_dy   ;; Math Magic - new heading in degrees based on x/y vectors
+    ;show new_head_deg  ; for debugging purposes
+    let heading_delta subtract-headings heading nav_head_deg ; calculate ideal turn order
+    let ordered_heading heading_delta  ;
+    ifelse abs heading_delta <= max-turn [ set ordered_heading heading_delta ] [ 
+      ifelse heading_delta < 0 [set ordered_heading -1 * max-turn] [set ordered_heading max-turn ]    ;this whole block caps the ordered_heading at max_turn (positive or negative)
+    ]
+    ; set heading new_head_deg
+    ;show heading_delta
+    ;show ordered_heading
+    
+    ; move the uuv with noise
+    let noisy_heading ordered_heading + ( random-normal 0 nav-bearing-std )   ;lt is built in function for left turn on current turtle  add gaussian noise to angle
+    set noisy-heading noisy_heading
+    set ordered-heading ordered_heading
+    lt noisy_heading
+    let noisy_speed threat-uuv-speed + ( random-normal 0 nav-velocity-std )   ;fd is built in function for forward on current turtle
+    fd noisy_speed
+    
+    ; move the position fix exactly
+    ask first [end1] of my-fix-links [
+      lt ordered_heading
+      fd threat-uuv-speed
+    ]
+  ] [
+      ; do nothing because the length of the vector is 0
+  ]
+end
+
+to-report smooth-patch-dx
+  ; interpolate between patch centers by scaling 
+  let this_x [behavior_x] of patch-here   ;Create variable with X behavior of cuent position
+;  let ahead_x [behavior_x] of patch-ahead 1
+;  let delta_x (this_x - ahead_x)
+;  let smooth_x (this_x + ((distance patch-ahead 1) * delta_x))
+  ;report smooth_x
+  report this_x  ; FIXME:no smoothing until bugs worked out
+end
+
+to-report smooth-patch-dy
+  ; interpolate between patch centers by scaling 
+  let this_y [behavior_y] of patch-here  ;Create variable with Y behavior of cuent position
+;  let ahead_y [behavior_y] of patch-ahead 1
+;  let delta_y (this_y - ahead_y)
+;  let smooth_y (this_y + ((distance patch-ahead 1) * delta_y))
+  report this_y ; FIXME: no smoothing until bugs worked out
+end
+
+to-report x-vector-to-avoid-obstacles
+  ; procedure to calculate and return the x component of the avoid field at the uuv location
+  ; use the uuvs link set to iterate through obstacles
+  ; loop through all contacts and sum the dx and dy for each, and return the aggregate dy
+  let total_dx 0
+  let total_dist 0  
+  ifelse any? nav-contacts [
+    foreach [end1] of nav-contacts [ contact -> 
+      let obs_dist_x ([xcor] of contact - xcor)  ; manually calculate distance to deal with wrapping worlds
+      let obs_dist_y ([ycor] of contact - ycor)
+      let obs_dist sqrt (obs_dist_x ^ 2 + obs_dist_y ^ 2)
+      if obs_dist < max-obs-dist [
+        set total_dx (total_dx + (obs_dist_x / (obs_dist ^ 2)))
+      ]
+    ]
+  report -1 * obs-influence * total_dx
+  ] [report 0]
+end
+
+to-report y-vector-to-avoid-obstacles
+  ; loop through all contacts and sum the dx and dy for each, and return the aggregate dy
+  let total_dy 0
+  let total_dist 0  
+  ifelse any? nav-contacts [
+    foreach [end1] of nav-contacts [ contact -> 
+      let obs_dist_x ([xcor] of contact - xcor)  ; manually calculate distance to deal with wrapping worlds
+      let obs_dist_y ([ycor] of contact - ycor)
+      let obs_dist sqrt (obs_dist_x ^ 2 + obs_dist_y ^ 2)
+      if obs_dist < max-obs-dist [
+        set total_dy (total_dy + (obs_dist_y / (obs_dist ^ 2)))
+      ]
+    ]
+  report -1 * obs-influence * total_dy
+  ] [report 0]
+end
+
+to update-mission-segment
+  
+  ask first [end1] of my-fix-links [ 
+    let next-segment (mission_segment + 1)    ;Create next-segment var with next mission segment number
+    if any? waypoints in-radius 1 with [waypoint-number = next-segment] [   ;If we are at (or close to) next-segment # waypoint
+      set mission_segment next-segment  ;update mission UUV mission segment with next #
+      let next-file (word environment-folder "mission_leg_" next-segment ".txt" )   ;Create string with next segmenet's vector file
+      ; show next-file  ;Print vector file to console for debug.
+      ifelse file-exists? next-file [ 
+        load-vector-data next-file  ;Load this vector data for UUV movement.
+      ] 
+      [
+        set end-reached true
+      ]
+    ]
+  ]
+end
+
+to-report navigation-error
+  ; report the horizontal navigation error in meters
+  let nav-error 0
+  ask uuvs [
+    set nav-error (patch-dim * distance first [end1] of my-fix-links)
+  ]
+  report nav-error
+end
+
+  
+;; sensing and tracking procedures
+
+to track-obstacles
+  ;stub
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

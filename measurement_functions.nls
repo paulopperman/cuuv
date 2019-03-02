@@ -1,0 +1,60 @@
+;; metrics and measurement functions for tracking simultaions
+
+globals [
+  number-of-collisions
+]
+
+to check-collisions
+ if any? obstacles-here [
+    set number-of-collisions ( number-of-collisions + 1 )
+    ]
+end
+
+
+to write-mine-marker-to-file [file-pattern]
+  let file-name (word file-pattern  "_run_" behaviorspace-run-number "markerxy.csv")
+  file-open file-name
+  ask mine-markers [ file-print (word xcor "," ycor "," position-error) ]
+  file-close
+end
+
+;;;;OBJECTIVE FUNCTIONS FOR EXPERIMENTS;;;;;;;;;
+
+to-report mission-objective-metric
+  let objective-metric 1
+  let mine-detected-ratio (count mine-contacts / count mines )
+  carefully [set objective-metric (mine-detected-ratio / ticks) ] [ set objective-metric 1 ]
+  ifelse (number-of-collisions = 0) [  report objective-metric ] [ report 0 ]
+end
+
+to-report objective-mine-detected-ratio
+  report ( count mine-contacts / count mines )
+end
+
+to-report objective-mine-speed
+  let objective-metric 0
+  set objective-metric ( (5 * objective-mine-detected-ratio) - ( ticks / 1000 ) - number-of-collisions )
+  report objective-metric
+end
+
+to-report objective-mine-position
+  let objective-metric 0
+  set objective-metric (objective-mine-speed - ((.1 * marker-std-dev) + (.1 * marker-mean)))
+  report objective-metric
+end
+
+to-report marker-std-dev
+  let output 0
+  if length [position-error] of mine-markers > 1 [ 
+    set output standard-deviation [position-error] of mine-markers 
+   ]
+  report output
+end
+
+to-report marker-mean
+  let output 0
+  if length [position-error] of mine-markers > 1 [
+    set output mean [position-error] of mine-markers
+  ]
+  report output
+end

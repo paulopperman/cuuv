@@ -4,14 +4,29 @@
 ;; This software is authored by Team 1.
 
 __includes [
+  "experiment_loader.nls"
+  "measurement_functions.nls"
   "environment_setup.nls"
-  "threat_uuv_procedures.nls"
+  "./model_source_files/threat_uuv_procedures.nls"
 ]
 
 ;; set global variables
 globals [
   mouse-clicked?  ;; tracking variable for mouse-manager
   environment-folder  ; the folder containing environment setup files
+  end-reached  ; boolean if the last waypoint has been reached
+  patch-dim  ; length of a patch in meters
+  tick-dim  ; duration of a tick in seconds (s/tick)
+  threat-uuv-speed  ; converted uuv-speed
+  max-turn  ; turning radius converted to degrees/tick
+  forward_min_range  ; converted forward sonar minimum range
+  forward_max_range  ; converted forward sonar max range
+  side_min_range  ; converted side sonar min range
+  side_max_range  ; converted side sonar max range
+  current-speed  ; converted current speed
+  nav-velocity-std  ; converted noise standard deviation
+  max-nav-error  ; metric for maximum nav error
+  experiment-number  ; iterator for behaviorspace
 ]
 
 
@@ -30,25 +45,64 @@ uuvs-own [
   mission_segment  ; state variable containing the current mission leg
 ]
 
+to convert-parameters
+  ;; code to convert front panel real world parameters into model scale values
+  set patch-dim 5  ;; patches are 5m
+  set tick-dim 1  ;; ticks are 1s
+
+  ; convert speed
+  set threat-uuv-speed ((uuv-speed / patch-dim) * tick-dim)
+  ; show threat-uuv-speed
+
+  ; calculate turn angle
+  set max-turn (2 * asin( uuv-speed / (2 * turn-radius )))
+  ; show max-turn
+
+  ; convert nav error
+  set nav-velocity-std (nav-velocity-std-cm * .01 * patch-dim)
+
+  ; convert sonar ranges
+  set forward_min_range (forward_low_range / patch-dim)
+  set forward_max_range (forward_hi_range / patch-dim)
+  set side_min_range (side_low_range / patch-dim)
+  set side_max_range (side_hi_range / patch-dim)
+
+  ; convert current speed
+  set current-speed ((drift-speed / patch-dim) * tick-dim)
+
+end
+
 
 to setup-environment
   clear-all
+  ; set up the world
 
-  set environment-folder "./environments/simple_minefield/"  ; the folder containing environment setup files
+  if behavior-space-run [read-experiment experiment-number]
+
+  resize-world 0 999 0 999
+  show "world resized"
+  set-patch-size 0.2
+  show "patches sized"
+
+  set environment-folder "./environments/5km_world/"  ; the folder containing environment setup files
+  show environment-folder
 
   load-mission-waypoints word environment-folder "mission_waypoints.txt"
+  show "mission_waypoints.txt loaded"
 
   load-vector-data word environment-folder "mission_leg_0.txt"  ; load the initial vector field
 
   ;; initialize obstacles
-  place-objects word environment-folder "obstacle_points.txt"
+  ;place-objects-from-file word environment-folder "obstacle_points.txt"
+  place-random-objects 20 200 10 300 989
 
   ;; place the minefield
-  lay-mines word environment-folder "minefield.txt"
+ ; lay-mines-from-file word environment-folder "minefield.txt"
+  lay-random-mines nmines minefield_minx minefield_miny minefield_maxx minefield_maxy
 
   setup-uuv
 
-  ask patches [color-potential]  ; should redefine how coloring works
+  ; ask patches [color-potential]  ; should redefine how coloring works
 
   reset-ticks
 end
@@ -57,6 +111,13 @@ to setup-uuv
 
   ask uuvs [die]
   ask self-position-fixes [die]
+
+  set number-of-collisions 0
+
+  set end-reached false
+
+  convert-parameters
+  set max-nav-error 0  ; initialize global
 
   load-vector-data word environment-folder "mission_leg_0.txt"  ; load the initial vector field
 
@@ -94,10 +155,14 @@ to go
     current-drift
     if (ticks mod sonar_ping_rate) = 0 [ classify-contacts ]      ; Looks around UUV, gets all contacts (mines, obstacles) and determines what kind of contact it is.  Do this every ping_rate ticks
     navigate-threat-uuv  ; move the threat uuv
+    check-collisions ; see if it hits anything
   ]
   ;show navigation-error
+  if navigation-error > max-nav-error [ set max-nav-error navigation-error ]
+
   tick  ;; next simulation step
 end
+
 
 to current-drift
   let drift_x current-speed * sin current-heading
@@ -162,11 +227,11 @@ end
 GRAPHICS-WINDOW
 619
 13
-1267
-662
+1619
+1022
 -1
 -1
-8.0
+0.2
 1
 10
 1
@@ -177,9 +242,9 @@ GRAPHICS-WINDOW
 0
 1
 0
-79
+999
 0
-79
+999
 1
 1
 1
@@ -187,10 +252,10 @@ ticks
 30.0
 
 BUTTON
-800
-679
-936
-712
+292
+833
+428
+866
 NIL
 setup-environment
 NIL
@@ -204,10 +269,10 @@ NIL
 1
 
 BUTTON
-835
-727
-898
-760
+329
+923
+392
+956
 NIL
 go
 T
@@ -229,7 +294,7 @@ max-obs-dist
 max-obs-dist
 1
 100
-13.6
+0.0
 0.1
 1
 NIL
@@ -244,7 +309,7 @@ obs-influence
 obs-influence
 0
 2
-1.0
+0.0
 0.1
 1
 NIL
@@ -255,14 +320,14 @@ SLIDER
 66
 187
 99
-max-turn
-max-turn
+turn-radius
+turn-radius
 0
 100
-6.0
+0.0
 1
 1
-NIL
+m
 HORIZONTAL
 
 SLIDER
@@ -270,21 +335,21 @@ SLIDER
 102
 186
 135
-threat-uuv-speed
-threat-uuv-speed
-0
-.5
-0.2
+uuv-speed
+uuv-speed
+.1
+3
+0.0
 .01
 1
-NIL
+m/s
 HORIZONTAL
 
 BUTTON
-1127
-684
-1215
-717
+442
+833
+530
+866
 NIL
 setup-uuv
 NIL
@@ -298,10 +363,10 @@ NIL
 1
 
 BUTTON
-1128
-726
-1209
-759
+443
+875
+524
+908
 hide links
 hide-link
 NIL
@@ -323,7 +388,7 @@ forward_angle
 forward_angle
 0
 100
-60.0
+0.0
 1
 1
 deg
@@ -338,25 +403,25 @@ side_angle
 side_angle
 0
 100
-60.0
+0.0
 1
 1
 deg
 HORIZONTAL
 
 PLOT
-1295
-14
-1714
-377
+1635
+36
+2054
+399
 Percent Mines Detected
 Time (ticks)
 % Mines Detected
 0.0
-2000.0
+32000.0
 0.0
 100.0
-false
+true
 false
 "" ""
 PENS
@@ -387,11 +452,11 @@ SLIDER
 273
 373
 306
-side_min_range
-side_min_range
+side_low_range
+side_low_range
 0
-30
-1.0
+100
+34.6124996154105
 .1
 1
 m
@@ -402,11 +467,11 @@ SLIDER
 273
 571
 306
-side_max_range
-side_max_range
+side_hi_range
+side_hi_range
 0
-100
-6.4
+800
+525.4017434722418
 .1
 1
 NIL
@@ -417,11 +482,11 @@ SLIDER
 454
 371
 487
-forward_min_range
-forward_min_range
+forward_low_range
+forward_low_range
 0
 100
-0.0
+1.5360198374148801
 .1
 1
 m
@@ -432,11 +497,11 @@ SLIDER
 453
 569
 486
-forward_max_range
-forward_max_range
+forward_hi_range
+forward_hi_range
 0
-100
-11.6
+800
+494.8164583496788
 .1
 1
 m
@@ -471,7 +536,7 @@ side_p_detect
 side_p_detect
 0
 1
-0.94
+0.8108026371270161
 .01
 1
 NIL
@@ -486,7 +551,7 @@ sonar_ping_rate
 sonar_ping_rate
 1
 100
-1.0
+0.0
 1
 1
 ticks/ping
@@ -501,7 +566,7 @@ forward_p_detect
 forward_p_detect
 0
 1
-0.96
+0.7312021614263079
 .01
 1
 NIL
@@ -540,10 +605,10 @@ UUV Command and Control Parameters
 1
 
 BUTTON
-1129
-768
-1211
-801
+444
+917
+526
+950
 NIL
 show-link
 NIL
@@ -557,40 +622,40 @@ NIL
 1
 
 SLIDER
-31
-657
-203
-690
+201
+66
+386
+99
 nav-bearing-std
 nav-bearing-std
 0
 5
-0.05
+0.0
 .001
 1
-NIL
+deg/s
 HORIZONTAL
 
 SLIDER
-37
-716
-209
-749
-nav-velocity-std
-nav-velocity-std
+200
+104
+393
+137
+nav-velocity-std-cm
+nav-velocity-std-cm
 0
+10
+0.0
+.01
 1
-0.05
-.001
-1
-NIL
+cm/s
 HORIZONTAL
 
 PLOT
-1297
-386
-1715
-688
+1635
+416
+2053
+718
 Position Error
 ticks
 error
@@ -605,34 +670,174 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot navigation-error"
 
 SLIDER
-566
-694
-738
-727
+325
+709
+497
+742
 current-heading
 current-heading
 0
 359
-121.0
+0.0
 1
 1
 deg
 HORIZONTAL
 
 SLIDER
-571
-748
-743
-781
-current-speed
-current-speed
+325
+747
+497
+780
+drift-speed
+drift-speed
 0
+2
+0.0
+.01
 1
-0.076
-.001
+m/s
+HORIZONTAL
+
+SLIDER
+15
+711
+187
+744
+nmines
+nmines
+0
+100
+0.0
+1
 1
 NIL
 HORIZONTAL
+
+SLIDER
+14
+750
+186
+783
+minefield_minx
+minefield_minx
+min-pxcor
+max-pxcor
+0.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+13
+788
+185
+821
+minefield_miny
+minefield_miny
+min-pycor
+max-pycor
+0.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+13
+825
+185
+858
+minefield_maxx
+minefield_maxx
+min-pxcor
+max-pxcor
+0.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+14
+864
+186
+897
+minefield_maxy
+minefield_maxy
+min-pycor
+max-pycor
+0.0
+1
+1
+NIL
+HORIZONTAL
+
+BUTTON
+444
+962
+571
+995
+lay random mines
+lay-random-mines nmines minefield_minx minefield_miny minefield_maxx minefield_maxy
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+TEXTBOX
+231
+23
+381
+41
+Navigation Errors
+14
+0.0
+1
+
+TEXTBOX
+17
+685
+167
+703
+Minefield Settings
+14
+0.0
+1
+
+BUTTON
+287
+877
+429
+910
+NIL
+convert-parameters
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SWITCH
+263
+983
+427
+1016
+behavior-space-run
+behavior-space-run
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -995,78 +1200,99 @@ NetLogo 6.0.4
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="experiment" repetitions="5" runMetricsEveryStep="true">
+  <experiment name="initial sensor experiment" repetitions="3" sequentialRunOrder="false" runMetricsEveryStep="false">
     <setup>setup-environment</setup>
     <go>go</go>
-    <timeLimit steps="10000"/>
-    <exitCondition>any? uuvs with [mission_segment = 10]</exitCondition>
-    <metric>count mine-contacts / count mines</metric>
-    <steppedValueSet variable="threat-uuv-speed" first="0.1" step="0.1" last="0.5"/>
-    <steppedValueSet variable="side_angle" first="10" step="10" last="60"/>
-    <enumeratedValueSet variable="obs-influence">
-      <value value="1"/>
-    </enumeratedValueSet>
-    <enumeratedValueSet variable="max-turn">
-      <value value="5"/>
-      <value value="10"/>
-      <value value="20"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="forward_angle" first="10" step="10" last="60"/>
-    <enumeratedValueSet variable="max-obs-dist">
+    <timeLimit steps="40000"/>
+    <exitCondition>end-reached</exitCondition>
+    <metric>( count mine-contacts / count mines )</metric>
+    <metric>max-nav-error</metric>
+    <enumeratedValueSet variable="turn-radius">
       <value value="10"/>
     </enumeratedValueSet>
-  </experiment>
-  <experiment name="experiment_just_final" repetitions="5" runMetricsEveryStep="false">
-    <setup>setup-environment</setup>
-    <go>go</go>
-    <timeLimit steps="10000"/>
-    <exitCondition>any? uuvs with [mission_segment = 10]</exitCondition>
-    <metric>count mine-contacts / count mines</metric>
-    <steppedValueSet variable="threat-uuv-speed" first="0.1" step="0.1" last="0.5"/>
-    <steppedValueSet variable="side_angle" first="10" step="10" last="60"/>
-    <enumeratedValueSet variable="obs-influence">
-      <value value="1"/>
+    <enumeratedValueSet variable="side_hi_range">
+      <value value="300"/>
+      <value value="500"/>
+      <value value="700"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="max-turn">
-      <value value="5"/>
-      <value value="10"/>
-      <value value="20"/>
+    <enumeratedValueSet variable="minefield_maxy">
+      <value value="800"/>
     </enumeratedValueSet>
-    <steppedValueSet variable="forward_angle" first="10" step="10" last="60"/>
-    <enumeratedValueSet variable="max-obs-dist">
-      <value value="10"/>
-    </enumeratedValueSet>
-  </experiment>
-  <experiment name="nav uncertainty study" repetitions="10" runMetricsEveryStep="true">
-    <setup>setup-environment</setup>
-    <go>go</go>
-    <metric>ask uuv navigation-error</metric>
-    <enumeratedValueSet variable="threat-uuv-speed">
-      <value value="0.14"/>
+    <enumeratedValueSet variable="forward_hi_range">
+      <value value="100"/>
+      <value value="200"/>
+      <value value="300"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="side_angle">
+      <value value="30"/>
       <value value="60"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="side_p_detect">
+      <value value="0.75"/>
+      <value value="0.95"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="side_low_range">
+      <value value="10"/>
+      <value value="30"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="obs-influence">
       <value value="1"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="max-turn">
-      <value value="7"/>
+    <enumeratedValueSet variable="side_detect_obstacles">
+      <value value="false"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="forward_angle">
-      <value value="60"/>
+    <enumeratedValueSet variable="minefield_minx">
+      <value value="200"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="nav-velocity-std">
-      <value value="0.005"/>
-      <value value="0.05"/>
+    <enumeratedValueSet variable="forward_p_detect">
+      <value value="0.75"/>
+      <value value="0.95"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="nav-bearing-std">
-      <value value="0.005"/>
-      <value value="0.05"/>
-      <value value="0.5"/>
+    <enumeratedValueSet variable="nmines">
+      <value value="10"/>
+      <value value="30"/>
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="forward_low_range">
+      <value value="0"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="max-obs-dist">
+      <value value="13.6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="current-heading">
+      <value value="62"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="minefield_miny">
+      <value value="200"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="forward_detect_mines">
+      <value value="false"/>
+      <value value="true"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="sonar_ping_rate">
+      <value value="1"/>
+      <value value="5"/>
       <value value="10"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="forward_angle">
+      <value value="30"/>
+      <value value="60"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="drift-speed">
+      <value value="0"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nav-velocity-std">
+      <value value="0.002"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="nav-bearing-std">
+      <value value="0.002"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="uuv-speed">
+      <value value="2"/>
+      <value value="4"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="minefield_maxx">
+      <value value="800"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
