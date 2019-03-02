@@ -36,8 +36,8 @@ globals [
 ;; define field parameters for patches
 patches-own [
   potential
-  behavior_x  ; x component of the behavior map vector
-  behavior_y  ; y component of the behavior map vector
+  behavior_x  ; x components of the behavior map vector
+  behavior_y  ; y components of the behavior map vector
 ]
 
 
@@ -84,7 +84,7 @@ to setup-environment
   ;set-patch-size 0.2
   ;show "patches sized"
 
-  set environment-folder "./environments/horseshoe_trial/"  ; the folder containing environment setup files
+  set environment-folder "./environments/test/single_mission_file/"  ; the folder containing environment setup files
   show environment-folder
 
   setup-world word environment-folder "world_dims.txt"
@@ -92,7 +92,8 @@ to setup-environment
   load-mission-waypoints word environment-folder "mission_waypoints.txt"
   show "mission_waypoints.txt loaded"
 
-  load-vector-data word environment-folder "mission_leg_0.txt"  ; load the initial vector field
+  ;load-vector-data word environment-folder "mission_leg_0.txt"  ; load the initial vector field
+  load-vector-data-v2 environment-folder
 
   ;; initialize obstacles
   place-objects-from-file word environment-folder "obstacles.txt"
@@ -122,6 +123,7 @@ to go
   ;show navigation-error
   if navigation-error > max-nav-error [ set max-nav-error navigation-error ]
   if end-reached [ stop ]
+
   tick  ;; next simulation step
 end
 

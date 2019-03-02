@@ -21,6 +21,7 @@ obstacles-own [
 
 globals [
   nav-vector-data
+  nav-vector-data-v2
   object-position-data
   waypoint-data
   minefield-data
@@ -76,6 +77,89 @@ to load-vector-data [file-name]
   display
   
 end
+
+;; load vector data version 2
+to load-vector-data-v2 [mission-directory]
+  ; build filename /mission-directory/mission_leg_X.txt
+  ; mission-data-container
+  ; start at leg_0 and increas number while file-exists?  store num_legs
+  ; read leg-data and add to mission-data-container
+  ; write behavior_x behavior_y for all legs to each patch
+
+ let file-name word mission-directory "mission_profile.txt"
+ 
+  ; We check to make sure the file exists first
+  ifelse ( file-exists? file-name)
+  [ 
+  ; We are saving the data into a list, so it only needs to be loaded once.
+    set nav-vector-data-v2 []
+
+    ; This opens the file, so we can use it.
+    file-open file-name
+
+    ; Read in all the data in the file
+    while [ not file-at-end? ]
+    [
+      ; file-read gives you variables.  In this case numbers.
+      ; We store them in a double list (ex [[1 1 9.9999] [1 2 9.9999] ...
+      ; Each iteration we append the next three-tuple to the current list
+    set nav-vector-data-v2 sentence nav-vector-data-v2 (list read-from-string (word "[" file-read-line "]"))
+    ]
+
+    ; user-message "Navigation loading complete!"
+
+    ; Done reading in patch information.  Close the file.
+    file-close
+  ] [ user-message "Navigation file does not exist in current directory!"]
+
+  
+  ;; define the mission vector field from the loaded data
+  ifelse ( is-list? nav-vector-data-v2 )
+    [ foreach nav-vector-data-v2 [ four-tuple -> ask patch first four-tuple item 1 four-tuple 
+      [ 
+        set behavior_x []
+        set behavior_y []
+        
+        let i 0
+        while [i < (count waypoints - 1)] [
+          set behavior_x lput (item (2 + (2 * i)) four-tuple) behavior_x
+          set behavior_y lput (item (2 + (2 * i) + 1) four-tuple) behavior_y
+          set i (i + 1)
+        ]
+      ]
+      ]
+    ] [ user-message "You need to load in patch data first!" ]
+  display
+end
+
+
+; https://stackoverflow.com/questions/10244850/read-file-lines-with-spaces-into-netlogo-as-lists
+;to-report read-file-into-list [file-name]
+;    file-open file-name
+;    let xs []
+;    while [ not file-at-end? ] [
+;      set xs lput file-read xs
+;    ]
+;    file-close
+;    report xs
+;end
+;
+;to-report split-into-n-lists [ n xs ]
+;  let lists n-values n [[]]
+;  while [not empty? xs] [
+;    let items []
+;    repeat n [
+;      if not empty? xs [
+;        set items lput (first xs) items
+;        set xs but-first xs
+;      ]
+;    ]
+;    foreach (n-values length items [ ? ]) [
+;      set lists replace-item ? lists (lput (item ? items) (item ? lists))
+;    ]
+;  ]
+;  report lists
+;end
 
 
 to place-objects-from-file [objs-file]

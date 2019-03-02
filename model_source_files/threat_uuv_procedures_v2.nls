@@ -87,9 +87,11 @@ to navigate-threat-uuv
   ;let avoid_x x-vector-to-avoid-obstacles  ; obstacle avoidance x vector from onboard sensors
   ;let avoid_y y-vector-to-avoid-obstacles  ; obstacle avoidance y vector from onboard sensors
   
-  ask first [end1] of my-fix-links [
-    set nav_dx smooth-patch-dx  ; get mission profile vector relative to the assumed position fix
-    set nav_dy smooth-patch-dy  ; get mission profile vector relative to the assumed position fix
+  if not end-reached [
+    ask first [end1] of my-fix-links [
+    set nav_dx smooth-patch-dx mission_segment  ; get mission profile vector relative to the assumed position fix
+    set nav_dy smooth-patch-dy mission_segment  ; get mission profile vector relative to the assumed position fix
+    ]
   ]
   
   ;let cur_dx (smooth-patch-dx + x-vector-to-avoid-obstacles)  ;; Gets current position X behavior TODO: replace patch-here with patchxy to account for nav error
@@ -127,9 +129,9 @@ to navigate-threat-uuv
   ]
 end
 
-to-report smooth-patch-dx
+to-report smooth-patch-dx [segment]
   ; interpolate between patch centers by scaling 
-  let this_x [behavior_x] of patch-here   ;Create variable with X behavior of cuent position
+  let this_x [item segment behavior_x] of patch-here   ;Create variable with X behavior of cuent position
 ;  let ahead_x [behavior_x] of patch-ahead 1
 ;  let delta_x (this_x - ahead_x)
 ;  let smooth_x (this_x + ((distance patch-ahead 1) * delta_x))
@@ -137,9 +139,9 @@ to-report smooth-patch-dx
   report this_x  ; FIXME:no smoothing until bugs worked out
 end
 
-to-report smooth-patch-dy
+to-report smooth-patch-dy [segment]
   ; interpolate between patch centers by scaling 
-  let this_y [behavior_y] of patch-here  ;Create variable with Y behavior of cuent position
+  let this_y [item segment behavior_y] of patch-here  ;Create variable with Y behavior of cuent position
 ;  let ahead_y [behavior_y] of patch-ahead 1
 ;  let delta_y (this_y - ahead_y)
 ;  let smooth_y (this_y + ((distance patch-ahead 1) * delta_y))
@@ -188,17 +190,34 @@ to update-mission-segment
     let next-segment (mission_segment + 1)    ;Create next-segment var with next mission segment number
     if any? waypoints in-radius 1 with [waypoint-number = next-segment] [   ;If we are at (or close to) next-segment # waypoint
       set mission_segment next-segment  ;update mission UUV mission segment with next #
-      let next-file (word environment-folder "mission_leg_" next-segment ".txt" )   ;Create string with next segmenet's vector file
-      ; show next-file  ;Print vector file to console for debug.
-      ifelse file-exists? next-file [ 
-        load-vector-data next-file  ;Load this vector data for UUV movement.
-      ] 
-      [
+;      let next-file (word environment-folder "mission_leg_" next-segment ".txt" )   ;Create string with next segmenet's vector file
+;      ; show next-file  ;Print vector file to console for debug.
+;      ifelse file-exists? next-file [ 
+ 
+      if next-segment = (count waypoints - 1) [
         set end-reached true
       ]
-    ]
+   ]
   ]
 end
+
+;to update-mission-segment
+;  
+;  ask first [end1] of my-fix-links [ 
+;    let next-segment (mission_segment + 1)    ;Create next-segment var with next mission segment number
+;    if any? waypoints in-radius 1 with [waypoint-number = next-segment] [   ;If we are at (or close to) next-segment # waypoint
+;      set mission_segment next-segment  ;update mission UUV mission segment with next #
+;      let next-file (word environment-folder "mission_leg_" next-segment ".txt" )   ;Create string with next segmenet's vector file
+;      ; show next-file  ;Print vector file to console for debug.
+;      ifelse file-exists? next-file [ 
+;        load-vector-data next-file  ;Load this vector data for UUV movement.
+;      ] 
+;      [
+;        set end-reached true
+;      ]
+;    ]
+;  ]
+;end
 
 to-report navigation-error
   ; report the horizontal navigation error in meters
