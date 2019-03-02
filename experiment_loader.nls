@@ -1,0 +1,100 @@
+
+;;http://netlogo-users.18673.x6.nabble.com/How-to-read-BehaviorSpace-parameters-from-file-Latin-hypercube-sampling-td4887590.html
+;; reads the experiment file
+;; The file muast be exported in CSV format, values separated by spaces,
+;; without any header, just the numbers sepérated by spaces
+;; its would be necessary to open the exported CSV file in a texte editor like bloc-note to clean it first.
+;; the decimal separator must be a point, not a comma, for compatibility with Java and NL
+
+to-report experiment-data [ experiment-file ]
+  let experiments []
+  ;;let xdata user-file
+  let dataline 0
+  ;;file-open xdata
+  file-open experiment-file
+  while [not file-at-end?] [
+    set dataline (word "[" file-read-line "]")
+    set experiments lput read-from-string dataline experiments
+  ]
+  file-close
+  let nbExperiments length experiments
+  print (word " * " nbExperiments " experiments to run")
+  ;print length experiments
+  ;print length item 0 experiments
+  report experiments
+end
+
+;;reads the indicated experiment configuration and stocks the values in the corresponding global variables
+; the order of the variables is set in the generate_experiment_design.py file
+to read-experiment [indexExp experiment-file ]
+  show indexExp
+  let data item indexExp experiment-data experiment-file
+  set turn-radius item 0 data
+  set uuv-speed item 1 data
+  set nav-bearing-std item 2 data
+  set nav-velocity-std-cm item 3 data
+  set max-obs-dist item 4 data
+  set obs-influence item 5 data
+  set sonar_ping_rate item 6 data
+  set side_angle item 7 data
+  set side_low_range item 8 data
+  set side_hi_range item 9 data
+  set side_p_detect item 10 data
+  set forward_angle item 11 data
+  set forward_low_range item 12 data
+  set forward_hi_range item 13 data
+  set forward_p_detect item 14 data
+  set current-heading item 15 data
+  set drift-speed item 16 data
+end 
+
+;; version2 experiment loader
+to read-experiment-v2 [indexExp experiment-file]
+  show indexExp
+  let data item indexExp experiment-data experiment-file
+  set turn-radius item 0 data
+  set uuv-speed item 1 data
+  set nav-bearing-std item 2 data
+  set nav-velocity-std-cm item 3 data
+  set max-obs-dist item 4 data
+  set obs-influence item 5 data
+  set sonar_ping_rate item 6 data
+  set side_angle item 7 data
+  set side_low_range item 8 data
+  set side_hi_range item 9 data
+  set signal-factor item 10 data
+  set forward_angle item 11 data
+  set forward_low_range item 12 data
+  set forward_hi_range item 13 data
+  set classification-threshold-std item 14 data
+  
+  
+  ;; set constants for the experiment
+  set side_p_detect 0  ; overridden by classification threshold
+  set forward_p_detect 0  ; overridden by classification threshold
+  set current-heading 0  ; no current
+  set drift-speed 0  ; no current
+  set classification-threshold-mean 0  ; constant class threshold
+  set source-level 100  ; constant source level
+  
+end
+
+to show-experiment-config  
+  show turn-radius
+  show uuv-speed
+  show nav-bearing-std 
+  show nav-velocity-std-cm 
+  show max-obs-dist 
+  show obs-influence
+  show sonar_ping_rate 
+  show side_angle 
+  show side_low_range 
+  show side_hi_range 
+  show side_p_detect 
+  show forward_angle 
+  show forward_low_range 
+  show forward_hi_range 
+  show forward_p_detect 
+  show current-heading 
+  show drift-speed
+end

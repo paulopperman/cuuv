@@ -1,5 +1,24 @@
 ;; netlogo code to define the map environment
 
+
+
+breed [waypoints waypoint]  ; objects to represent navigation waypoints
+waypoints-own [
+  waypoint-number
+]
+
+breed [mines mine]  ; mine agents
+mines-own [
+  target-strength-coefficient
+]
+
+breed [obstacles obstacle]  ;; agent representing an obstacle
+obstacles-own [
+  target-strength-coefficient
+]
+
+
+
 globals [
   nav-vector-data
   object-position-data
@@ -7,12 +26,21 @@ globals [
   minefield-data
 ]
 
-breed [waypoints waypoint]  ; objects to represent navigation waypoints
-breed [mines mine]  ; mine agents
 
-waypoints-own [
-  waypoint-number
-]
+to setup-world [file-name]
+  ; programmatically resize the world based on the mission profile
+  
+  ifelse ( file-exists? file-name) [
+    file-open file-name
+    while [ not file-at-end? ] [
+      resize-world file-read file-read file-read file-read
+      set-patch-size 0.2
+    ]
+   file-close
+  ] [
+   resize-world 0 99 0 99
+  ]
+end 
 
 to load-vector-data [file-name]
 
@@ -50,7 +78,7 @@ to load-vector-data [file-name]
 end
 
 
-to place-objects [objs-file]
+to place-objects-from-file [objs-file]
   ;; read a file with the location of objects in the environment
   ; We check to make sure the file exists first
   ifelse ( file-exists? objs-file )
@@ -84,6 +112,15 @@ to place-objects [objs-file]
   ] ] ]
     [ user-message "You need to load in obstacle data first!" ]
   
+end
+
+to place-random-objects [ number_of_objects xmin ymin xmax ymax ]
+  create-obstacles number_of_objects [
+    setxy (xmin + (random-float (xmax - xmin))) (ymin + (random-float (ymax - xmin)))
+    set shape "rock"
+    set size 5
+    set color gray
+  ]
 end
 
 to load-mission-waypoints [waypoints-file]
@@ -122,7 +159,17 @@ to load-mission-waypoints [waypoints-file]
   
 end
 
-to lay-mines [minefield-file]
+to lay-random-mines [number_of_mines xmin ymin xmax ymax ]
+  ; lay a number_of_mines mines randomly in the box between (xmin, ymin) and (xmax, ymax)
+  create-mines number_of_mines [
+    setxy (xmin + (random-float (xmax - xmin))) (ymin + (random-float (ymax - xmin)))
+    set shape "target"
+    set color orange
+  ]  ; place the mines randomly
+end
+
+
+to lay-mines-from-file [minefield-file]
   ; We check to make sure the file exists first
   ifelse ( file-exists? minefield-file )
   [

@@ -1,6 +1,13 @@
-/.ipynb_checkpoints
+*.ipynb_checkpoints
 /__pycache__
+/.idea
+
+/python_code/.ipynb_checkpoints
+/python_code/__pycache__
 
 *.tmp.nlogo
 
 /sim_outputs/temp
+
+.RData
+.Rhistory
