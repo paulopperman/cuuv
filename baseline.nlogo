@@ -205,7 +205,7 @@ max-obs-dist
 max-obs-dist
 1
 100
-5.76
+27.8
 0.1
 1
 NIL
@@ -220,7 +220,7 @@ obs-influence
 obs-influence
 0
 5
-3.88
+2.8
 0.1
 1
 NIL
@@ -235,7 +235,7 @@ turn-radius
 turn-radius
 1
 30
-19.86
+10.9
 1
 1
 m
@@ -250,7 +250,7 @@ uuv-speed
 uuv-speed
 .1
 5
-4.75
+1.9
 .01
 1
 m/s
@@ -299,7 +299,7 @@ forward_angle
 forward_angle
 0
 100
-77.0
+76.0
 1
 1
 deg
@@ -314,7 +314,7 @@ side_angle
 side_angle
 30
 160
-71.0
+37.0
 1
 1
 deg
@@ -367,7 +367,7 @@ side_low_range
 side_low_range
 0
 300
-40.0
+5.0
 .1
 1
 m
@@ -382,7 +382,7 @@ side_hi_range
 side_hi_range
 50
 800
-244.0
+609.0
 .1
 1
 NIL
@@ -397,7 +397,7 @@ forward_low_range
 forward_low_range
 0
 20
-3.0
+1.0
 .1
 1
 m
@@ -412,7 +412,7 @@ forward_hi_range
 forward_hi_range
 10
 600
-64.0
+400.0
 .1
 1
 m
@@ -462,7 +462,7 @@ sonar_ping_rate
 sonar_ping_rate
 1
 100
-18.0
+4.0
 1
 1
 ticks/ping
@@ -541,7 +541,7 @@ nav-bearing-std
 nav-bearing-std
 0
 5
-0.73
+0.35
 .001
 1
 deg/s
@@ -556,7 +556,7 @@ nav-velocity-std-cm
 nav-velocity-std-cm
 0
 10
-1.41
+0.9
 .01
 1
 cm/s
@@ -589,7 +589,7 @@ current-heading
 current-heading
 0
 359
-0.0
+213.0
 1
 1
 deg
@@ -604,7 +604,7 @@ drift-speed
 drift-speed
 0
 2
-0.0
+0.4
 .01
 1
 m/s
@@ -804,7 +804,7 @@ source-level
 source-level
 1
 160
-100.0
+58.0
 .1
 1
 dB
@@ -819,7 +819,7 @@ classification-threshold-mean
 classification-threshold-mean
 0
 80
-0.0
+3.0
 .1
 1
 dB
@@ -834,7 +834,7 @@ signal-factor
 signal-factor
 0
 100
-26.0
+0.0
 .1
 1
 dB
@@ -864,7 +864,7 @@ classification-threshold-std
 classification-threshold-std
 0
 10
-5.13
+9.2
 .1
 1
 dB
@@ -1231,7 +1231,7 @@ NetLogo 6.0.4
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="counter baseline test" repetitions="10" sequentialRunOrder="false" runMetricsEveryStep="false">
+  <experiment name="baseline vulnerability study" repetitions="10" sequentialRunOrder="false" runMetricsEveryStep="false">
     <setup>cp
 cd
 ct
@@ -1250,7 +1250,7 @@ lay-mines-from-file word environment-folder "minefield.txt"
 setup-uuv
 reset-ticks</setup>
     <go>go</go>
-    <timeLimit steps="20000"/>
+    <timeLimit steps="10000"/>
     <exitCondition>end-reached</exitCondition>
     <metric>number-of-collisions</metric>
     <metric>max-nav-error</metric>
@@ -1258,6 +1258,46 @@ reset-ticks</setup>
     <metric>marker-mean</metric>
     <metric>marker-std-dev</metric>
     <steppedValueSet variable="experiment-number" first="0" step="1" last="128"/>
+  </experiment>
+  <experiment name="threat baseline run" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>cp
+cd
+ct
+clear-all-plots
+
+set number-of-collisions 0
+set max-nav-error 0
+let experiment-file "./experiments/baseline_NOLH.txt"
+read-baseline-experiment experiment-number experiment-file
+set environment-folder "./environments/baseline/"
+setup-world word environment-folder "world_dims.txt"
+load-mission-waypoints word environment-folder "mission_waypoints.txt"
+load-vector-data-v2 environment-folder
+place-objects-from-file word environment-folder "obstacles.txt"
+lay-mines-from-file word environment-folder "minefield.txt"
+setup-uuv
+reset-ticks</setup>
+    <go>go</go>
+    <timeLimit steps="30000"/>
+    <exitCondition>end-reached</exitCondition>
+    <metric>number-of-collisions</metric>
+    <metric>max-nav-error</metric>
+    <metric>count mine-contacts</metric>
+    <metric>marker-mean</metric>
+    <metric>marker-std-dev</metric>
+    <steppedValueSet variable="experiment-number" first="0" step="1" last="64"/>
+    <enumeratedValueSet variable="random-seed">
+      <value value="1"/>
+      <value value="3"/>
+      <value value="5"/>
+      <value value="8"/>
+      <value value="22"/>
+      <value value="153"/>
+      <value value="98341"/>
+      <value value="88"/>
+      <value value="99"/>
+      <value value="15"/>
+    </enumeratedValueSet>
   </experiment>
 </experiments>
 @#$#@#$#@
