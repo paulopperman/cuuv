@@ -1,0 +1,36 @@
+;; code for simulating dvl spoofer nodes
+;; the nodes have an influence radius, inside which a uuv's position-fix is displaced in the influence-heading direction by influence-strength amount
+
+breed [spoofers spoofer]
+
+spoofers-own [
+  influence-radius
+  influence-heading
+  influence-strength
+  target-strength-coefficient
+]
+
+
+to deploy-spoofers
+  create-spoofers 100 [ 
+   setxy random-xcor random-ycor
+   set influence-radius 100 / patch-dim
+   set influence-heading 45
+   set influence-strength 10
+    set color blue
+  ]
+  
+end
+
+to spoof-dvl
+  ask spoofers [
+    let offset-heading influence-heading  ; create local variables to pass to fix
+    let offset-dist influence-strength
+    ask uuvs in-radius influence-radius [
+      ask first [end1] of my-fix-links [
+        hatch 1
+        setxy (xcor + ((sin offset-heading) * offset-dist)) (ycor + ((cos offset-heading) * offset-dist))  ; displace the nav fix by influence-strength units
+      ]
+    ]
+  ]
+end

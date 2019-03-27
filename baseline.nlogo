@@ -8,6 +8,7 @@ __includes [
   "measurement_functions.nls"
   "environment_setup.nls"
   "./model_source_files/threat_uuv_procedures_v2.nls"
+  "./model_source_files/dvl_spoofer_procedures.nls"
 ]
 
 ;; set global variables
@@ -110,10 +111,13 @@ end
 
 
 to go
+
+  let ping (ticks mod floor sonar_ping_rate) = 0
+
   ask uuvs [
     update-mission-segment   ; Checks current position, and updates mission segment and associated vector profiles if necessay
     current-drift
-    if (ticks mod floor sonar_ping_rate) = 0 [
+    if ping [
       detect-sonar-contacts
       ;show "ping"
     ]      ; Looks around UUV, gets all contacts (mines, obstacles) and determines what kind of contact it is.  Do this every ping_rate ticks
@@ -122,6 +126,7 @@ to go
   ]
   ;show navigation-error
   if navigation-error > max-nav-error [ set max-nav-error navigation-error ]
+  if ping [ spoof-dvl ]
   if end-reached [ stop ]
 
   tick  ;; next simulation step
@@ -314,7 +319,7 @@ side_angle
 side_angle
 30
 160
-37.0
+41.0
 1
 1
 deg
@@ -397,7 +402,7 @@ forward_low_range
 forward_low_range
 0
 20
-1.0
+0.9
 .1
 1
 m
@@ -541,7 +546,7 @@ nav-bearing-std
 nav-bearing-std
 0
 5
-0.35
+0.0
 .001
 1
 deg/s
@@ -556,7 +561,7 @@ nav-velocity-std-cm
 nav-velocity-std-cm
 0
 10
-0.9
+0.0
 .01
 1
 cm/s
@@ -589,7 +594,7 @@ current-heading
 current-heading
 0
 359
-213.0
+0.0
 1
 1
 deg
@@ -604,7 +609,7 @@ drift-speed
 drift-speed
 0
 2
-0.4
+0.0
 .01
 1
 m/s
@@ -849,7 +854,7 @@ noise-floor
 noise-floor
 -100
 100
--19.0
+-18.0
 1
 1
 NIL
@@ -864,11 +869,28 @@ classification-threshold-std
 classification-threshold-std
 0
 10
-9.2
+9.7
 .1
 1
 dB
 HORIZONTAL
+
+BUTTON
+632
+924
+753
+957
+NIL
+deploy-spoofers
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?

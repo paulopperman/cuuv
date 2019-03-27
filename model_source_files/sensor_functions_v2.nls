@@ -34,11 +34,14 @@ end
 
 to detect-sonar-contacts
   ;; get all objects in range
-  carefully [create-sonar-contacts-to turtles in-radius ( max-sonar-range / patch-dim ) ] [] ; start with any agent within the maximum radius of detection
+  let things-in-range ((turtle-set mines obstacles) in-radius (max-sonar-range / patch-dim))
+  carefully [create-sonar-contacts-to things-in-range ] [] ; start with any agent within the maximum radius of detection
   ;; get rid of virtual agents
+  ask spoofers [ ask my-in-links [die] ]
   ask waypoints [ ask my-in-links [die] ]
   ask self-position-fixes [ ask my-in-links [die] ]
   ask mine-markers [ ask my-in-links [die] ]
+  
   
   ;; filter contact by sensor
   let current_heading heading
