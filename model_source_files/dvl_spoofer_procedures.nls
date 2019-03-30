@@ -10,13 +10,20 @@ spoofers-own [
   target-strength-coefficient
 ]
 
+globals [
+  spoofer-count
+  spoofer-radius
+  spoofer-heading
+  spoofer-strength
+]
+
 
 to deploy-spoofers
-  create-spoofers 100 [ 
-   setxy random-xcor random-ycor
-   set influence-radius 100 / patch-dim
-   set influence-heading 45
-   set influence-strength 10
+  create-spoofers spoofer-count [ 
+   setxy (2 * (spoofer-strength / patch-dim + 5) + (random-xcor - (spoofer-strength / patch-dim + 5))) (2 * (spoofer-strength / patch-dim + 5) + (random-ycor - (spoofer-strength / patch-dim + 5))) ; keep uuv from being pushed off the edge
+   set influence-radius spoofer-radius / patch-dim
+   set influence-heading spoofer-heading
+   set influence-strength spoofer-strength / patch-dim
     set color blue
   ]
   
