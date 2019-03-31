@@ -1,0 +1,25 @@
+breed [diffusers diffuser] ; bubble diffuser head agents
+
+diffusers-own [
+  bubble-density
+  attenuation
+]
+
+
+to deploy-diffuser-line [startx starty endx endy diffuser-spacing]
+  ; calculate line length
+  let line-length sqrt ((startx - endx) ^ 2 + (starty - endy) ^ 2)
+  let num-steps floor (line-length / diffuser-spacing)
+  
+  ; create the seed diffuser and walk it down the line hatching new diffusers
+  create-diffusers 1 [
+    setxy startx starty
+    facexy endx endy
+    let pos 0
+    while [pos < num-steps][
+      hatch 1
+      fd diffuser-spacing
+      set pos pos + 1
+    ]
+  ]
+end

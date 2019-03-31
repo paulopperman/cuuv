@@ -9,6 +9,7 @@ __includes [
   "environment_setup.nls"
   "./model_source_files/threat_uuv_procedures_v2.nls"
   "./model_source_files/dvl_spoofer_procedures.nls"
+  "./model_source_files/bubble_curtain_procedures.nls"
 ]
 
 ;; set global variables
@@ -144,7 +145,7 @@ GRAPHICS-WINDOW
 619
 13
 1019
-414
+422
 -1
 -1
 0.2
