@@ -1,4 +1,6 @@
 breed [diffusers diffuser] ; bubble diffuser head agents
+directed-link-breed [blockage-lines blockage-line]
+undirected-link-breed [diffuser-lines diffuser-line]
 
 diffusers-own [
   bubble-density
@@ -12,14 +14,32 @@ to deploy-diffuser-line [startx starty endx endy diffuser-spacing]
   let num-steps floor (line-length / diffuser-spacing)
   
   ; create the seed diffuser and walk it down the line hatching new diffusers
+;  create-diffusers 1 [
+;    setxy startx starty
+;    facexy endx endy
+;    let pos 0
+;    while [pos < num-steps][
+;      hatch 1
+;      fd diffuser-spacing
+;      set pos pos + 1
+;    ]
+;  ]
+  
+  ; create start end
   create-diffusers 1 [
     setxy startx starty
-    facexy endx endy
-    let pos 0
-    while [pos < num-steps][
-      hatch 1
-      fd diffuser-spacing
-      set pos pos + 1
+    create-blockage-line-from one-of uuvs  ; random reporter works since theres only one uuv
+    hatch-diffusers 1 [
+      create-diffuser-line-with myself
+      setxy endx endy
+      create-blockage-line-from one-of uuvs
     ]
   ]
+
 end
+
+to-report obscured-objects
+  ; compute the shadow region and return mines and obstacles that are in it
+  ; 
+end
+  
