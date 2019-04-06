@@ -2,35 +2,21 @@ breed [diffusers diffuser] ; bubble diffuser head agents
 directed-link-breed [blockage-lines blockage-line]
 undirected-link-breed [diffuser-lines diffuser-line]
 
-diffusers-own [
+diffuser-lines-own [
   bubble-density
   attenuation
 ]
 
 
-to deploy-diffuser-line [startx starty endx endy diffuser-spacing]
-  ; calculate line length
-  let line-length sqrt ((startx - endx) ^ 2 + (starty - endy) ^ 2)
-  let num-steps floor (line-length / diffuser-spacing)
-  
-  ; create the seed diffuser and walk it down the line hatching new diffusers
-;  create-diffusers 1 [
-;    setxy startx starty
-;    facexy endx endy
-;    let pos 0
-;    while [pos < num-steps][
-;      hatch 1
-;      fd diffuser-spacing
-;      set pos pos + 1
-;    ]
-;  ]
-  
+to deploy-diffuser-line [startx starty endx endy attenuation-value]
+
   ; create start end
   create-diffusers 1 [
     setxy startx starty
+    let me self
     create-blockage-line-from one-of uuvs  ; random reporter works since theres only one uuv
     hatch-diffusers 1 [
-      create-diffuser-line-with myself
+      create-diffuser-line-with me [ set attenuation attenuation-value ]
       setxy endx endy
       create-blockage-line-from one-of uuvs
     ]
@@ -38,8 +24,60 @@ to deploy-diffuser-line [startx starty endx endy diffuser-spacing]
 
 end
 
-to-report obscured-objects
-  ; compute the shadow region and return mines and obstacles that are in it
+to-report calculate-obstruction-loss
+  ; this is called from a sonar-contact
+  ; for now, the just reports the amount of degradation from bubble curtains, but could be refactored to account for any acoustic impediments
+  
+  let total-loss 0  ; default no loss condition for this sonar contact
+  
+  ; check impact of each diffuser-line in the world
+  ask diffuser-lines [
+    if links-cross myself self [
+      set total-loss total-loss + attenuation
+    ]
+  ]
   ; 
+  ; if intersects, subtract the attenuation value from the sonar-contact snr
+  report total-loss
+end
+
+
+to-report links-cross [ link1 link2 ]
+  ; return true if the two links cross
+  ; https://stackoverflow.com/questions/3838329/how-can-i-check-if-two-segments-intersect
+  ; get the link endpoints.  
+  ; link1 is x1,y1 to x2,y2
+  ; link2 is x3,y3 to x4,y4
+  let x1 [xcor] of [end1] of link1
+  let y1 [ycor] of [end1] of link1
+  let x2 [xcor] of [end2] of link1
+  let y2 [ycor] of [end2] of link1
+  let x3 [xcor] of [end1] of link2
+  let y3 [ycor] of [end1] of link2
+  let x4 [xcor] of [end2] of link2
+  let y4 [ycor] of [end2] of link2
+  
+  ; check to make sure the line segments are not separated
+  ifelse ((max list x1 x2) < (min list x3 x4)) [ report false ] [
+  
+    ; calculate slopes
+    ; first, compensate for vertical line where x = x to aviod divide by zero errors
+    if x1 = x2 [ set x2 x2 + 0.005 ]
+    if x3 = x4 [ set x4 x4 + 0.005 ]
+    let a1 (y1 - y2) / (x1 - x2)
+    let a2 (y3 - y4) / (x3 - x4)
+    
+    ; calculate intercepts
+    let b1 (y1 - (a1 * x1))
+    let b2 (y3 - (a2 * x3))
+    
+    ; if parallel, return false
+    ifelse (a1 = a2) [ report false ] [
+      ; else check if the intersection point is in the region of the line segments
+      let Xa (b2 - b1) / (a1 - a2)
+      ifelse ((Xa < (max list (min list x1 x2) (min list x3 x4))) or (Xa > (min list (max list x1 x2) (max list x3 x4)))) [ report false ] [ report true ]
+    ]
+  ]
+    
 end
   

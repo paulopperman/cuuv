@@ -810,7 +810,7 @@ source-level
 source-level
 1
 160
-55.0
+117.5
 .1
 1
 dB
@@ -855,7 +855,7 @@ noise-floor
 noise-floor
 -100
 100
--18.0
+0.0
 1
 1
 NIL
