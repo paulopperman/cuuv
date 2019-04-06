@@ -7,6 +7,11 @@ diffuser-lines-own [
   attenuation
 ]
 
+globals [
+  diffuser-line-position-data
+  field-attenuation
+]
+
 
 to deploy-diffuser-line [startx starty endx endy attenuation-value]
 
@@ -80,4 +85,32 @@ to-report links-cross [ link1 link2 ]
   ]
     
 end
+
+to read-bubble-field-from-file [ filename ]
+    ;; read a file with the location of bubble lines
+  ; We check to make sure the file exists first
+  ifelse ( file-exists? filename )
+  [
+    ; We are saving the data into a list, so it only needs to be loaded once.
+    set diffuser-line-position-data []
+
+    ; This opens the file, so we can use it.
+    file-open filename
+
+    ; Read in all the data in the file
+    while [ not file-at-end? ]
+    [
+
+      set diffuser-line-position-data sentence diffuser-line-position-data (list (list file-read file-read file-read file-read))
+    ]
+
+
+    file-close
+  ]
+  [ user-message "Bubble field file does not exist in current directory!" ]
   
+  ifelse ( is-list? diffuser-line-position-data )
+    [ foreach diffuser-line-position-data [line-coords -> deploy-diffuser-line item 0 line-coords item 1 line-coords item 2 line-coords item 3 line-coords field-attenuation] ]
+    [ user-message "You need to load in bubble field data first!" ]
+  
+end
