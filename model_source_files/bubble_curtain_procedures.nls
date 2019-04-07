@@ -19,11 +19,11 @@ to deploy-diffuser-line [startx starty endx endy attenuation-value]
   create-diffusers 1 [
     setxy startx starty
     let me self
-    create-blockage-line-from one-of uuvs  ; random reporter works since theres only one uuv
+    ; create-blockage-line-from one-of uuvs  ; random reporter works since theres only one uuv
     hatch-diffusers 1 [
       create-diffuser-line-with me [ set attenuation attenuation-value ]
       setxy endx endy
-      create-blockage-line-from one-of uuvs
+      ; create-blockage-line-from one-of uuvs
     ]
   ]
 
@@ -110,7 +110,17 @@ to read-bubble-field-from-file [ filename ]
   [ user-message "Bubble field file does not exist in current directory!" ]
   
   ifelse ( is-list? diffuser-line-position-data )
-    [ foreach diffuser-line-position-data [line-coords -> deploy-diffuser-line item 0 line-coords item 1 line-coords item 2 line-coords item 3 line-coords field-attenuation] ]
+    [ foreach diffuser-line-position-data [ line-coords -> let xa item 0 line-coords let ya item 1 line-coords let xb item 2 line-coords let yb item 3 line-coords
+      
+      set xa xa / patch-dim
+      set ya ya / patch-dim
+      set xb xb / patch-dim
+      set yb yb / patch-dim
+      
+      deploy-diffuser-line xa ya xb yb field-attenuation
+      
+     ]
+  ]
     [ user-message "You need to load in bubble field data first!" ]
   
 end

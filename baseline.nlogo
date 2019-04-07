@@ -211,7 +211,7 @@ max-obs-dist
 max-obs-dist
 1
 100
-21.5
+28.8
 0.1
 1
 NIL
@@ -226,7 +226,7 @@ obs-influence
 obs-influence
 0
 5
-3.0
+3.1
 0.1
 1
 NIL
@@ -241,7 +241,7 @@ turn-radius
 turn-radius
 1
 30
-14.3
+16.3
 1
 1
 m
@@ -256,7 +256,7 @@ uuv-speed
 uuv-speed
 .1
 5
-1.2
+1.6
 .01
 1
 m/s
@@ -305,7 +305,7 @@ forward_angle
 forward_angle
 0
 100
-65.0
+85.0
 1
 1
 deg
@@ -320,7 +320,7 @@ side_angle
 side_angle
 30
 160
-25.0
+24.0
 1
 1
 deg
@@ -388,7 +388,7 @@ side_hi_range
 side_hi_range
 50
 800
-684.0
+669.0
 .1
 1
 NIL
@@ -418,7 +418,7 @@ forward_hi_range
 forward_hi_range
 10
 600
-203.1
+303.1
 .1
 1
 m
@@ -468,7 +468,7 @@ sonar_ping_rate
 sonar_ping_rate
 1
 100
-3.0
+8.0
 1
 1
 ticks/ping
@@ -547,7 +547,7 @@ nav-bearing-std
 nav-bearing-std
 0
 5
-0.0
+0.4
 .001
 1
 deg/s
@@ -562,7 +562,7 @@ nav-velocity-std-cm
 nav-velocity-std-cm
 0
 10
-0.0
+0.37
 .01
 1
 cm/s
@@ -595,7 +595,7 @@ current-heading
 current-heading
 0
 359
-143.0
+8.0
 1
 1
 deg
@@ -610,7 +610,7 @@ drift-speed
 drift-speed
 0
 2
-0.2
+0.0
 .01
 1
 m/s
@@ -810,7 +810,7 @@ source-level
 source-level
 1
 160
-117.5
+72.0
 .1
 1
 dB
@@ -825,7 +825,7 @@ classification-threshold-mean
 classification-threshold-mean
 0
 80
-3.0
+4.0
 .1
 1
 dB
@@ -870,7 +870,7 @@ classification-threshold-std
 classification-threshold-std
 0
 10
-4.9
+9.2
 .1
 1
 dB
@@ -1451,6 +1451,128 @@ place-objects-from-file word environment-folder "obstacles.txt"
 lay-mines-from-file word environment-folder "minefield.txt"
 setup-uuv
 deploy-spoofers
+reset-ticks</setup>
+    <go>go</go>
+    <timeLimit steps="30000"/>
+    <exitCondition>end-reached</exitCondition>
+    <metric>number-of-collisions</metric>
+    <metric>max-nav-error</metric>
+    <metric>count mine-contacts</metric>
+    <metric>marker-mean</metric>
+    <metric>marker-std-dev</metric>
+    <steppedValueSet variable="experiment-number" first="0" step="1" last="128"/>
+    <enumeratedValueSet variable="random-seed">
+      <value value="1"/>
+      <value value="3"/>
+      <value value="5"/>
+      <value value="8"/>
+      <value value="22"/>
+      <value value="153"/>
+      <value value="98341"/>
+      <value value="88"/>
+      <value value="99"/>
+      <value value="15"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="bubble field 5x5" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>cp
+cd
+ct
+clear-all-plots
+
+set number-of-collisions 0
+set max-nav-error 0
+let experiment-file "./experiments/bubble_field_NOLH.txt"
+read-bubble-field-experiment experiment-number experiment-file
+set environment-folder "./environments/baseline/"
+setup-world word environment-folder "world_dims.txt"
+load-mission-waypoints word environment-folder "mission_waypoints.txt"
+load-vector-data-v2 environment-folder
+place-objects-from-file word environment-folder "obstacles.txt"
+lay-mines-from-file word environment-folder "minefield.txt"
+setup-uuv
+read-bubble-field-from-file "experiments/bubble_field/5x5grid.txt"
+reset-ticks</setup>
+    <go>go</go>
+    <timeLimit steps="30000"/>
+    <exitCondition>end-reached</exitCondition>
+    <metric>number-of-collisions</metric>
+    <metric>max-nav-error</metric>
+    <metric>count mine-contacts</metric>
+    <metric>marker-mean</metric>
+    <metric>marker-std-dev</metric>
+    <steppedValueSet variable="experiment-number" first="0" step="1" last="128"/>
+    <enumeratedValueSet variable="random-seed">
+      <value value="1"/>
+      <value value="3"/>
+      <value value="5"/>
+      <value value="8"/>
+      <value value="22"/>
+      <value value="153"/>
+      <value value="98341"/>
+      <value value="88"/>
+      <value value="99"/>
+      <value value="15"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="bubble field 5x5 open" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>cp
+cd
+ct
+clear-all-plots
+
+set number-of-collisions 0
+set max-nav-error 0
+let experiment-file "./experiments/bubble_field_NOLH.txt"
+read-bubble-field-experiment experiment-number experiment-file
+set environment-folder "./environments/baseline/"
+setup-world word environment-folder "world_dims.txt"
+load-mission-waypoints word environment-folder "mission_waypoints.txt"
+load-vector-data-v2 environment-folder
+place-objects-from-file word environment-folder "obstacles.txt"
+lay-mines-from-file word environment-folder "minefield.txt"
+setup-uuv
+read-bubble-field-from-file "experiments/bubble_field/5x5open.txt"
+reset-ticks</setup>
+    <go>go</go>
+    <timeLimit steps="30000"/>
+    <exitCondition>end-reached</exitCondition>
+    <metric>number-of-collisions</metric>
+    <metric>max-nav-error</metric>
+    <metric>count mine-contacts</metric>
+    <metric>marker-mean</metric>
+    <metric>marker-std-dev</metric>
+    <steppedValueSet variable="experiment-number" first="0" step="1" last="128"/>
+    <enumeratedValueSet variable="random-seed">
+      <value value="1"/>
+      <value value="3"/>
+      <value value="5"/>
+      <value value="8"/>
+      <value value="22"/>
+      <value value="153"/>
+      <value value="98341"/>
+      <value value="88"/>
+      <value value="99"/>
+      <value value="15"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="threat run large NOLH experiment" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>cp
+cd
+ct
+clear-all-plots
+
+set number-of-collisions 0
+set max-nav-error 0
+let experiment-file "./experiments/baseline_large_NOLH.txt"
+read-baseline-experiment experiment-number experiment-file
+set environment-folder "./environments/baseline/"
+setup-world word environment-folder "world_dims.txt"
+load-mission-waypoints word environment-folder "mission_waypoints.txt"
+load-vector-data-v2 environment-folder
+place-objects-from-file word environment-folder "obstacles.txt"
+lay-mines-from-file word environment-folder "minefield.txt"
+setup-uuv
 reset-ticks</setup>
     <go>go</go>
     <timeLimit steps="30000"/>
