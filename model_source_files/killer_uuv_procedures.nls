@@ -1,0 +1,114 @@
+breed [hydrophones hydrophone]
+breed [uuv-killers uuv-killer]
+breed [killer-docks killer-dock]
+
+directed-link-breed [target-locks target-lock]
+
+uuv-killers-own [
+  speed
+  kill-radius
+  pk
+]
+
+hydrophones-own [
+  comms-range
+  lock
+]
+
+target-locks-own [
+  age
+]
+
+globals [
+  hydrophone-comms-range
+]
+
+to deploy-hydrophone-array [ topx topy botx boty spacing ]
+  ; make an evenly spaced grid by walking hydrophones around
+  ; dimensions defined by top left corner and bottom right corner.  grid will be larger than defined square
+  let width botx - topx
+  let height boty - topy
+   
+  create-hydrophones 1 [
+    set comms-range hydrophone-comms-range
+    set lock FALSE
+    setxy topx topy
+    set heading 90
+    while [xcor < botx] [
+      hatch-hydrophones 1
+      fd spacing
+    ]
+  ]
+  
+  ask hydrophones [
+    set heading 180
+    while [ycor > boty] [
+      hatch-hydrophones 1
+      fd spacing
+    ]
+  ]
+end
+
+to deploy-uuv-killer [dockx docky]
+  create-killer-docks 1 [
+    setxy dockx docky
+    hatch-uuv-killers 1 [
+      set pk .9
+      set speed 2
+      set kill-radius 2
+    ]
+  ]
+
+end
+to killer-track
+  ; check to see if there are any targets to move towards
+  ifelse any? bracketed [
+    ask uuv-killers [
+      let target-bearing towards min-one-of bracketed [distance myself]  ; target the closest uuv
+                                                                         ; stub guidance code
+      set heading target-bearing
+      fd speed
+      ; explode if someone is nearby
+      ; use local randomness to keep all motions the same for given random seed
+      with-local-randomness [
+        if any? uuvs in-radius kill-radius [
+          if pk > random-float 1 [  ; kill the uuv with probability pk
+            ask uuvs in-radius kill-radius [die]
+            die
+          ]
+        ]
+      ]
+    ]
+  ] [
+    ; if no bracketed uuv, go home slowly
+    ask uuv-killers [
+      face min-one-of killer-docks [distance myself]
+      fd speed / 4  
+    ]
+  ]
+end
+
+to get-locks
+; check if hydrophones are locked
+  ask hydrophones [
+    set lock locked
+    if not lock [ask my-target-locks [die]]  ; if there is no longer a uuv in range, break the lock
+  ]
+end
+
+to-report locked
+  ask target-locks with [age > 30 ] [die]  ; drop stale locks
+  ask target-locks [set age age + 1]
+  ifelse ping [
+    let targets uuvs in-radius 100 ; simplify propagation, TODO: make this dependent on range and acoustic ambient
+    if any? targets [ 
+      ask targets [ create-target-lock-from myself ]
+    ]
+  report any? targets  ; stub
+  ] [ report FALSE ]  ; don't report any targets when no pinging
+  
+end
+
+to-report bracketed
+  report uuvs with [count my-in-target-locks > 2]
+end

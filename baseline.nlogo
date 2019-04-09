@@ -10,6 +10,7 @@ __includes [
   "./model_source_files/threat_uuv_procedures_v2.nls"
   "./model_source_files/dvl_spoofer_procedures.nls"
   "./model_source_files/bubble_curtain_procedures.nls"
+  "./model_source_files/killer_uuv_procedures.nls"
 ]
 
 ;; set global variables
@@ -28,6 +29,8 @@ globals [
   nav-velocity-std  ; converted noise standard deviation
   max-nav-error  ; metric for maximum nav error
   experiment-number  ; iterator for behaviorspace
+
+  ping ; if the threat uuv is pinging
 ]
 
 
@@ -113,7 +116,7 @@ end
 
 to go
 
-  let ping (ticks mod floor sonar_ping_rate) = 0
+  set ping (ticks mod floor sonar_ping_rate) = 0
 
   ask uuvs [
     update-mission-segment   ; Checks current position, and updates mission segment and associated vector profiles if necessay
@@ -127,8 +130,13 @@ to go
   ]
   ;show navigation-error
   if navigation-error > max-nav-error [ set max-nav-error navigation-error ]
-  if ping [ spoof-dvl ]
+  if ping [
+    spoof-dvl
+    get-locks
+  ]
+  killer-track
   if end-reached [ stop ]
+  if not any? uuvs [ stop ]
 
   tick  ;; next simulation step
 end
@@ -468,7 +476,7 @@ sonar_ping_rate
 sonar_ping_rate
 1
 100
-8.0
+50.0
 1
 1
 ticks/ping
@@ -883,6 +891,58 @@ BUTTON
 957
 NIL
 deploy-spoofers
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+780
+831
+894
+864
+setup killer uuv
+deploy-hydrophone-array 50 350 350 50 50\ndeploy-uuv-killer 200 200
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+PLOT
+1336
+928
+1536
+1078
+plot 3
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot [age] of target-locks"
+
+BUTTON
+309
+1002
+372
+1035
+step
+go
 NIL
 1
 T
