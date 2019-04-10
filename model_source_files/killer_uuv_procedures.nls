@@ -125,5 +125,5 @@ to-report locked
 end
 
 to-report bracketed
-  report uuvs with [count my-in-target-locks > 2]
+  report uuvs with [count my-in-target-locks > 3]
 end
