@@ -208,6 +208,43 @@ to read-bubble-field-experiment [indexExp experiment-file]
   
 end
 
+to read-uuv-killer-experiment [indexExp experiment-file]
+  show indexExp
+  let data item indexExp experiment-data experiment-file
+  set source-level item 0 data
+  set classification-threshold-std item 1 data
+  set classification-threshold-mean item 2 data
+  set sonar_ping_rate item 3 data
+  set uuv-speed item 4 data
+  set turn-radius item 5 data
+  set side_angle item 6 data
+  set side_hi_range item 7 data
+  set forward_angle item 8 data
+  set forward_hi_range item 9 data
+  set max-obs-dist item 10 data
+  set obs-influence item 11 data
+  set nav-bearing-std item 12 data
+  set nav-velocity-std-cm item 13 data
+  set current-heading item 14 data
+  set drift-speed item 15 data
+  set killer-speed item 16 data
+  set killer-pk item 17 data
+  set killer-kill-rad item 18 data
+  set lock-timeout item 19 data
+  set hydrophone-array-spacing item 20 data
+  set det-radius item 21 data
+
+    
+  
+  ;; set constants for the experiment
+  set side_p_detect 0  ; overridden by classification threshold
+  set forward_p_detect 0  ; overridden by classification threshold
+  set side_low_range 5  ; don't detect right below to accound for min range for SAS
+  set signal-factor 0  ; normalize, vary source-level for cuuv experiments
+  set forward_low_range 1  ; returns get swamped by pings closer than this
+  
+end
+
 to show-experiment-config  
   show turn-radius
   show uuv-speed

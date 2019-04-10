@@ -219,7 +219,7 @@ max-obs-dist
 max-obs-dist
 1
 100
-28.8
+27.7
 0.1
 1
 NIL
@@ -234,7 +234,7 @@ obs-influence
 obs-influence
 0
 5
-3.1
+3.5
 0.1
 1
 NIL
@@ -249,7 +249,7 @@ turn-radius
 turn-radius
 1
 30
-16.3
+16.9
 1
 1
 m
@@ -264,7 +264,7 @@ uuv-speed
 uuv-speed
 .1
 5
-1.6
+1.7
 .01
 1
 m/s
@@ -313,7 +313,7 @@ forward_angle
 forward_angle
 0
 100
-85.0
+99.0
 1
 1
 deg
@@ -328,7 +328,7 @@ side_angle
 side_angle
 30
 160
-24.0
+34.0
 1
 1
 deg
@@ -396,7 +396,7 @@ side_hi_range
 side_hi_range
 50
 800
-669.0
+752.0
 .1
 1
 NIL
@@ -426,7 +426,7 @@ forward_hi_range
 forward_hi_range
 10
 600
-303.1
+471.9
 .1
 1
 m
@@ -476,7 +476,7 @@ sonar_ping_rate
 sonar_ping_rate
 1
 100
-50.0
+7.0
 1
 1
 ticks/ping
@@ -555,7 +555,7 @@ nav-bearing-std
 nav-bearing-std
 0
 5
-0.4
+0.3
 .001
 1
 deg/s
@@ -570,7 +570,7 @@ nav-velocity-std-cm
 nav-velocity-std-cm
 0
 10
-0.37
+1.0
 .01
 1
 cm/s
@@ -603,7 +603,7 @@ current-heading
 current-heading
 0
 359
-8.0
+334.0
 1
 1
 deg
@@ -618,7 +618,7 @@ drift-speed
 drift-speed
 0
 2
-0.0
+0.3
 .01
 1
 m/s
@@ -818,7 +818,7 @@ source-level
 source-level
 1
 160
-72.0
+62.0
 .1
 1
 dB
@@ -878,7 +878,7 @@ classification-threshold-std
 classification-threshold-std
 0
 10
-9.2
+5.0
 .1
 1
 dB
@@ -907,7 +907,7 @@ BUTTON
 894
 864
 setup killer uuv
-deploy-hydrophone-array 50 350 350 50 50\ndeploy-uuv-killer 200 200
+deploy-hydrophone-array 50 350 350 50 50\ndeploy-uuv-killer 200 200 .9 2 2\nset lock-timeout 30
 NIL
 1
 T
@@ -943,6 +943,23 @@ BUTTON
 1035
 step
 go
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+523
+1027
+670
+1060
+test killer experiment
+set kill-made FALSE\ncp\ncd\nct\nclear-all-plots\n\nset number-of-collisions 0\nset max-nav-error 0\nlet experiment-file \"./experiments/uuv_killer_NOLH.txt\"\nread-uuv-killer-experiment 0 experiment-file\nset environment-folder \"./environments/baseline/\"\nsetup-world word environment-folder \"world_dims.txt\"\nload-mission-waypoints word environment-folder \"mission_waypoints.txt\"\nload-vector-data-v2 environment-folder\nplace-objects-from-file word environment-folder \"obstacles.txt\"\nlay-mines-from-file word environment-folder \"minefield.txt\"\nsetup-uuv\ndeploy-hydrophone-array 50 350 350 50 hydrophone-array-spacing\ndeploy-uuv-killer 1000 1000 killer-pk killer-speed killer-kill-rad\nreset-ticks\nwatch one-of uuv-killers
 NIL
 1
 T
@@ -1736,6 +1753,55 @@ reset-ticks</setup>
       <value value="88"/>
       <value value="99"/>
       <value value="15"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="lone killer uuv centered" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>set kill-made FALSE
+cp
+cd
+ct
+clear-all-plots
+
+set number-of-collisions 0
+set max-nav-error 0
+let experiment-file "./experiments/uuv_killer_NOLH.txt"
+read-uuv-killer-experiment experiment-number experiment-file
+set environment-folder "./environments/baseline/"
+setup-world word environment-folder "world_dims.txt"
+load-mission-waypoints word environment-folder "mission_waypoints.txt"
+load-vector-data-v2 environment-folder
+place-objects-from-file word environment-folder "obstacles.txt"
+lay-mines-from-file word environment-folder "minefield.txt"
+setup-uuv
+deploy-hydrophone-array 50 350 350 50 hydrophone-array-spacing
+deploy-uuv-killer 1000 1000 killer-pk killer-speed killer-kill-rad
+reset-ticks</setup>
+    <go>go</go>
+    <timeLimit steps="30000"/>
+    <exitCondition>end-reached or kill-made</exitCondition>
+    <metric>number-of-collisions</metric>
+    <metric>max-nav-error</metric>
+    <metric>count mine-contacts</metric>
+    <metric>marker-mean</metric>
+    <metric>marker-std-dev</metric>
+    <metric>kill-made</metric>
+    <steppedValueSet variable="experiment-number" first="0" step="1" last="128"/>
+    <enumeratedValueSet variable="random-seed">
+      <value value="1"/>
+      <value value="3"/>
+      <value value="5"/>
+      <value value="8"/>
+      <value value="22"/>
+      <value value="153"/>
+      <value value="98341"/>
+      <value value="88"/>
+      <value value="99"/>
+      <value value="15"/>
+      <value value="5423"/>
+      <value value="1235"/>
+      <value value="325"/>
+      <value value="2"/>
+      <value value="9"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>

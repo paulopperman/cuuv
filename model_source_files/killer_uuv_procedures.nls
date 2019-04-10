@@ -20,7 +20,15 @@ target-locks-own [
 ]
 
 globals [
+  killer-speed
+  killer-pk
+  killer-kill-rad
+  hydrophone-array-spacing
+  hydrophone-det-radius
   hydrophone-comms-range
+  det-radius ; radius, in simulation units, of hydrophone detection to abstract relative performance of all acoustic parameters
+  lock-timeout
+  kill-made ; if the uuv-killer makes a kill
 ]
 
 to deploy-hydrophone-array [ topx topy botx boty spacing ]
@@ -49,13 +57,19 @@ to deploy-hydrophone-array [ topx topy botx boty spacing ]
   ]
 end
 
-to deploy-uuv-killer [dockx docky]
+to deploy-uuv-killer [x y thispk my-speed my-kill-rad]  ; provide in real world units
+  ; scale parameters to simulation values
+  let dockx x / patch-dim
+  let docky y / patch-dim
+  let this-speed my-speed / patch-dim
+  let this-kill-rad my-kill-rad / patch-dim
+  
   create-killer-docks 1 [
     setxy dockx docky
     hatch-uuv-killers 1 [
-      set pk .9
-      set speed 2
-      set kill-radius 2
+      set pk thispk
+      set speed this-speed
+      set kill-radius this-kill-rad
     ]
   ]
 
@@ -75,6 +89,7 @@ to killer-track
           if pk > random-float 1 [  ; kill the uuv with probability pk
             ask uuvs in-radius kill-radius [die]
             die
+            set kill-made TRUE
           ]
         ]
       ]
@@ -97,10 +112,10 @@ to get-locks
 end
 
 to-report locked
-  ask target-locks with [age > 30 ] [die]  ; drop stale locks
+  ask target-locks with [age > lock-timeout ] [die]  ; drop stale locks
   ask target-locks [set age age + 1]
   ifelse ping [
-    let targets uuvs in-radius 100 ; simplify propagation, TODO: make this dependent on range and acoustic ambient
+    let targets uuvs in-radius det-radius ; simplify propagation in sim units, TODO: make this dependent on range and acoustic ambient
     if any? targets [ 
       ask targets [ create-target-lock-from myself ]
     ]
