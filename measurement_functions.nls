@@ -2,6 +2,7 @@
 
 globals [
   number-of-collisions
+  count-mine-markers
 ]
 
 to check-collisions
@@ -41,6 +42,10 @@ to-report objective-mine-position
   let objective-metric 0
   set objective-metric (objective-mine-speed - ((.1 * marker-std-dev) + (.1 * marker-mean)))
   report objective-metric
+end
+
+to-report count-mine-contacts
+  report count mine-markers
 end
 
 to-report marker-std-dev

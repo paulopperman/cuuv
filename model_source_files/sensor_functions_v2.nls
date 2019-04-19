@@ -29,16 +29,22 @@ globals [
 
 to-report active-sonar-snr
   ; implement the active sonar equation for sonar-contacts
-  report contact-sl - (signal-factor + (20 * log (patch-dim * 2 * link-length) 10 )) + [target-strength-coefficient] of end2
+  let this-snr contact-sl - (signal-factor + (20 * log (patch-dim * 2 * link-length) 10 )) + [target-strength-coefficient] of end2
+  ; check to see if this sonar-contact is obstructed
+  let obstruction-loss calculate-obstruction-loss
+  report this-snr - obstruction-loss
 end
 
 to detect-sonar-contacts
   ;; get all objects in range
-  carefully [create-sonar-contacts-to turtles in-radius ( max-sonar-range / patch-dim ) ] [] ; start with any agent within the maximum radius of detection
+  let things-in-range ((turtle-set mines obstacles) in-radius (max-sonar-range / patch-dim))
+  carefully [create-sonar-contacts-to things-in-range ] [] ; start with any agent within the maximum radius of detection
   ;; get rid of virtual agents
+  ask spoofers [ ask my-in-links [die] ]
   ask waypoints [ ask my-in-links [die] ]
   ask self-position-fixes [ ask my-in-links [die] ]
   ask mine-markers [ ask my-in-links [die] ]
+  
   
   ;; filter contact by sensor
   let current_heading heading
@@ -52,8 +58,8 @@ to detect-sonar-contacts
     set in_forward_view ( abs relative_bearing < forward_angle / 2 )  ; is the object in view of the forward sonar?
     if not (in_sidescan_view or in_forward_view) [die]
     if (in_sidescan_view and ((link-length < side_min_range) or (link-length > side_max_range))) [die]  ; set max and minimum range for sidescan sonar
-    set contact-sl this-sl
-    set contact-di this-di
+    set contact-sl this-sl  ; not used at present
+    set contact-di this-di  ; not used at present
     set contact-snr active-sonar-snr
     ifelse contact-snr > noise-floor [ classify-contact ] [ die ]  ; if contact is above the noisefloor, do something with it
   ]

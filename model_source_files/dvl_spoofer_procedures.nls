@@ -1,0 +1,72 @@
+;; code for simulating dvl spoofer nodes
+;; the nodes have an influence radius, inside which a uuv's position-fix is displaced in the influence-heading direction by influence-strength amount
+
+breed [spoofers spoofer]
+
+spoofers-own [
+  influence-radius
+  influence-heading
+  influence-strength
+  target-strength-coefficient
+]
+
+globals [
+  spoofer-count
+  spoofer-radius
+  spoofer-heading
+  spoofer-strength
+  spoofer-spacing
+]
+
+
+to deploy-spoofers
+  create-spoofers spoofer-count [ 
+   setxy (2 * (spoofer-strength / patch-dim + 5) + (random-xcor - (spoofer-strength / patch-dim + 5))) (2 * (spoofer-strength / patch-dim + 5) + (random-ycor - (spoofer-strength / patch-dim + 5))) ; keep uuv from being pushed off the edge
+   set influence-radius spoofer-radius / patch-dim
+   set influence-heading spoofer-heading
+   set influence-strength spoofer-strength / patch-dim
+    set color blue
+  ]
+  
+end
+
+to deploy-spoofer-grid [ topx topy botx boty spacing ]
+  ; make an evenly spaced grid by walking spoofers around
+  ; dimensions defined by top left corner and bottom right corner.  grid will be larger than defined square
+  let width botx - topx
+  let height boty - topy
+  
+  
+  
+  create-spoofers 1 [
+    set influence-radius spoofer-radius / patch-dim
+    set influence-heading spoofer-heading
+    set influence-strength spoofer-strength / patch-dim
+    setxy topx topy
+    set heading 90
+    while [xcor < botx] [
+      hatch-spoofers 1
+      fd spacing
+    ]
+  ]
+  
+  ask spoofers [
+    set heading 180
+    while [ycor > boty] [
+      hatch-spoofers 1
+      fd spacing
+    ]
+  ]
+end
+
+to spoof-dvl
+  ask spoofers [
+    let offset-heading influence-heading  ; create local variables to pass to fix
+    let offset-dist influence-strength
+    ask uuvs in-radius influence-radius [
+      ask first [end1] of my-fix-links [
+        setxy (xcor + ((sin offset-heading) * offset-dist)) (ycor + ((cos offset-heading) * offset-dist))  ; displace the nav fix by influence-strength units
+      ]
+    ]
+  ]
+end
