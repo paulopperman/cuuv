@@ -1781,7 +1781,7 @@ reset-ticks</setup>
     <exitCondition>end-reached or kill-made</exitCondition>
     <metric>number-of-collisions</metric>
     <metric>max-nav-error</metric>
-    <metric>count mine-contacts</metric>
+    <metric>count-mine-contacts</metric>
     <metric>marker-mean</metric>
     <metric>marker-std-dev</metric>
     <metric>kill-made</metric>
@@ -1803,6 +1803,88 @@ reset-ticks</setup>
       <value value="325"/>
       <value value="2"/>
       <value value="9"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="spoofer grid" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>cp
+cd
+ct
+clear-all-plots
+
+set number-of-collisions 0
+set max-nav-error 0
+let experiment-file "./experiments/spoofer_grid_NOLH.txt"
+read-spoofer-grid-experiment experiment-number experiment-file
+set environment-folder "./environments/baseline/"
+setup-world word environment-folder "world_dims.txt"
+load-mission-waypoints word environment-folder "mission_waypoints.txt"
+load-vector-data-v2 environment-folder
+place-objects-from-file word environment-folder "obstacles.txt"
+lay-mines-from-file word environment-folder "minefield.txt"
+setup-uuv
+deploy-spoofer-grid 50 350 350 50 spoofer-spacing
+reset-ticks</setup>
+    <go>go</go>
+    <timeLimit steps="30000"/>
+    <exitCondition>end-reached</exitCondition>
+    <metric>number-of-collisions</metric>
+    <metric>max-nav-error</metric>
+    <metric>count mine-contacts</metric>
+    <metric>marker-mean</metric>
+    <metric>marker-std-dev</metric>
+    <steppedValueSet variable="experiment-number" first="0" step="1" last="128"/>
+    <enumeratedValueSet variable="random-seed">
+      <value value="1"/>
+      <value value="3"/>
+      <value value="5"/>
+      <value value="8"/>
+      <value value="22"/>
+      <value value="153"/>
+      <value value="98341"/>
+      <value value="88"/>
+      <value value="99"/>
+      <value value="15"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="spoofer grid no nav error" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="false">
+    <setup>cp
+cd
+ct
+clear-all-plots
+
+set number-of-collisions 0
+set max-nav-error 0
+let experiment-file "./experiments/spoofer_grid_no_nav_error_NOLH.txt"
+read-spoofer-grid-experiment experiment-number experiment-file
+set environment-folder "./environments/baseline/"
+setup-world word environment-folder "world_dims.txt"
+load-mission-waypoints word environment-folder "mission_waypoints.txt"
+load-vector-data-v2 environment-folder
+place-objects-from-file word environment-folder "obstacles.txt"
+lay-mines-from-file word environment-folder "minefield.txt"
+setup-uuv
+deploy-spoofer-grid 50 350 350 50 spoofer-spacing
+reset-ticks</setup>
+    <go>go</go>
+    <timeLimit steps="30000"/>
+    <exitCondition>end-reached</exitCondition>
+    <metric>number-of-collisions</metric>
+    <metric>max-nav-error</metric>
+    <metric>count mine-contacts</metric>
+    <metric>marker-mean</metric>
+    <metric>marker-std-dev</metric>
+    <steppedValueSet variable="experiment-number" first="0" step="1" last="128"/>
+    <enumeratedValueSet variable="random-seed">
+      <value value="1"/>
+      <value value="3"/>
+      <value value="5"/>
+      <value value="8"/>
+      <value value="22"/>
+      <value value="153"/>
+      <value value="98341"/>
+      <value value="88"/>
+      <value value="99"/>
+      <value value="15"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>

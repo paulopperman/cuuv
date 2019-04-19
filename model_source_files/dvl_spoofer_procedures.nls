@@ -15,6 +15,7 @@ globals [
   spoofer-radius
   spoofer-heading
   spoofer-strength
+  spoofer-spacing
 ]
 
 
