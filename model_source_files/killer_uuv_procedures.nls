@@ -89,8 +89,8 @@ to killer-track
           if pk > random-float 1 [  ; kill the uuv with probability pk
             set kill-made TRUE
             ask uuvs in-radius kill-radius [die]
-            die
           ]
+          die
         ]
       ]
     ]

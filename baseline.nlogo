@@ -219,7 +219,7 @@ max-obs-dist
 max-obs-dist
 1
 100
-27.5
+23.2
 0.1
 1
 NIL
@@ -234,7 +234,7 @@ obs-influence
 obs-influence
 0
 5
-2.5
+2.2
 0.1
 1
 NIL
@@ -249,7 +249,7 @@ turn-radius
 turn-radius
 1
 30
-10.9
+15.9
 1
 1
 m
@@ -264,7 +264,7 @@ uuv-speed
 uuv-speed
 .1
 5
-1.6
+1.5
 .01
 1
 m/s
@@ -313,7 +313,7 @@ forward_angle
 forward_angle
 0
 100
-64.0
+120.0
 1
 1
 deg
@@ -328,7 +328,7 @@ side_angle
 side_angle
 30
 160
-35.0
+37.0
 1
 1
 deg
@@ -396,7 +396,7 @@ side_hi_range
 side_hi_range
 50
 800
-664.0
+755.0
 .1
 1
 NIL
@@ -426,7 +426,7 @@ forward_hi_range
 forward_hi_range
 10
 600
-118.8
+459.4
 .1
 1
 m
@@ -476,7 +476,7 @@ sonar_ping_rate
 sonar_ping_rate
 1
 100
-3.0
+2.0
 1
 1
 ticks/ping
@@ -555,7 +555,7 @@ nav-bearing-std
 nav-bearing-std
 0
 5
-0.16
+0.24
 .001
 1
 deg/s
@@ -570,7 +570,7 @@ nav-velocity-std-cm
 nav-velocity-std-cm
 0
 10
-0.59
+0.07
 .01
 1
 cm/s
@@ -603,7 +603,7 @@ current-heading
 current-heading
 0
 359
-250.0
+39.0
 1
 1
 deg
@@ -618,7 +618,7 @@ drift-speed
 drift-speed
 0
 2
-0.3
+0.2
 .01
 1
 m/s
@@ -818,7 +818,7 @@ source-level
 source-level
 1
 160
-70.0
+83.0
 .1
 1
 dB
@@ -833,7 +833,7 @@ classification-threshold-mean
 classification-threshold-mean
 0
 80
-6.0
+2.0
 .1
 1
 dB
@@ -878,7 +878,7 @@ classification-threshold-std
 classification-threshold-std
 0
 10
-4.1
+4.7
 .1
 1
 dB
@@ -1786,6 +1786,7 @@ reset-ticks</setup>
     <metric>marker-std-dev</metric>
     <metric>kill-made</metric>
     <metric>end-reached</metric>
+    <metric>count uuvs</metric>
     <steppedValueSet variable="experiment-number" first="0" step="1" last="128"/>
     <enumeratedValueSet variable="random-seed">
       <value value="1"/>
