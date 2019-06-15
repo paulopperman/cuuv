@@ -1,6 +1,6 @@
 # Threat UUV modeling
 
-Repository for threat UUV models and simulation.  Detailed documentation is developed in the [wiki](https://gitlab.nps.edu/team1-cuuv/threat-uuv-modeling/wikis/home).
+Repository for threat UUV models and simulation.
 
 # Technology
 *Describe software, languages, and packages required to run the code.*
