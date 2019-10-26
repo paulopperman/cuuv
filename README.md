@@ -1,6 +1,6 @@
 # Threat UUV modeling
 
-Repository for threat UUV models and simulation.
+Repository for threat UUV models and simulation supporting the research published at [http://hdl.handle.net/10945/62736](http://hdl.handle.net/10945/62736).
 
 # Technology
 *Describe software, languages, and packages required to run the code.*
